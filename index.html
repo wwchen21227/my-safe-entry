@@ -15,10 +15,15 @@
 <body>
     <div id="container">
         <header class="header">
-            <a href="#">MySafeEntry</a>
+            <a href="#">MySafe<b>Entry</b></a>
+            <a id="btnQrScan" href="javascript:void(0)" class="btn-qr-Scan"><img src="images/scan-qr-icon.png"></a>
         </header>
 
-        <div id="scanContainer" class="scan-container">
+        <div id="entryListContainer" class="entry-list-container hide">
+            <ul id="entryList" class="entry-list"></ul>
+        </div>
+
+        <div id="scanContainer" class="scan-container hide">
             <div class="scan-message-box">
                 <h3>Scan QR Code</h3>
                 <p>
@@ -26,7 +31,7 @@
                 </p>
             </div>
             <img class="qr-image" src="./images/qrcode.png"/>
-            <div class="btn-holder">
+            <div class="btn-holder align-center">
                 <button id="start-button" class="btn-primary">Scan</button>
             </div>
         </div>
@@ -40,6 +45,7 @@
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.9.0/dist/localforage.min.js"></script>
     <script src="./lib/qr-scanner.umd.min.js"></script>
     <script src="./index.js"></script>
 </body>

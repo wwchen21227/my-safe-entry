@@ -354,7 +354,7 @@
 
   :root {
     --main-bg-color: #fff;
-    --red-bg-color: #EF3340;
+    --red-bg-color: #ff6565;
     --white-text-color: #fff;
     --primary-text-color: #24292e;
     --dimmer-text-color:rgba(0,0,0,0.5);
@@ -381,17 +381,28 @@ body {
     background-color: var(--main-bg-color);
 }
 
+a {
+    text-decoration: none;
+}
+
 header{
     height: 46px;
-    background-color: var(--red-bg-color);
+    background-color: #fff;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 header > a{
+    font-weight: 300;
     margin-left: 1rem;
-    color: var(--white-text-color);
+    color: var(--red-bg-color);
     text-decoration: none;
+    font-size: 1.25rem;
+}
+
+header > a > b {
+    font-weight: bold;
 }
 
 .scan-container 
@@ -399,17 +410,16 @@ header > a{
     display: flex;
     align-items: center;
     flex-direction: column;
-    height: 100vh;
-    border: solid 1px red;
+    height: calc(100vh - 46px);
 }
 
 .scan-message-box {
     text-align: center;
     width: 90%;
-    background-color: #f1f1f1;
+    background-color: #ffe5e5;
     border-radius: 10px;
     padding: 0.5rem 1rem;
-    margin: 3rem 0 2rem;
+    margin: 2rem 0;
 }
 
 .scan-message-box  > p{
@@ -418,18 +428,20 @@ header > a{
 }
 
 .btn-holder{
-    margin-top: 2rem;
+    margin: 3rem auto 0;
+    width: 90%;
 }
 
 .btn-primary{ 
- background-color: var(--red-bg-color);
- border:0;
- outline: 0;
- color: var(--white-text-color);
- padding: 10px;
- text-transform: uppercase;
- border-radius: 999rem;
- width: 140px;
+    background-color: var(--red-bg-color);
+    border:0;
+    outline: 0;
+    color: var(--white-text-color);
+    padding: 15px;
+    text-transform: uppercase;
+    border-radius: 1.5rem;
+    letter-spacing: 0.25px;
+    width: 100%;
 }
 
 .qr-scanner-container{
@@ -441,4 +453,29 @@ header > a{
     visibility: hidden;
     height: 0;
     position: absolute;
+}
+
+.entry-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.entry-list > li{
+    padding: 1rem;
+    border-bottom: solid 1px #eee;
+}
+
+.entry-date{
+    font-size: 0.8rem;
+    color: var(--dimmer-text-color);
+}
+
+.btn-qr-Scan{
+    position: absolute;
+    right: 15px;
+}
+
+.btn-qr-Scan > img{
+    width: 20px;
 }
