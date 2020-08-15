@@ -1,0 +1,46 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>My Safe Entry</title>
+  <meta name="description" content="Safe entries home">
+
+  <link rel="stylesheet" href="index.css?v=1.0">
+
+</head>
+
+<body>
+    <div id="container">
+        <header class="header">
+            <a href="#">MySafeEntry</a>
+        </header>
+
+        <div id="scanContainer" class="scan-container">
+            <div class="scan-message-box">
+                <h3>Scan QR Code</h3>
+                <p>
+                    Click Scan button to start checkin/checkout SafeEntry.
+                </p>
+            </div>
+            <img class="qr-image" src="./images/qrcode.png"/>
+            <div class="btn-holder">
+                <button id="start-button" class="btn-primary">Scan</button>
+            </div>
+        </div>
+
+        <div id="qrScannerContainer" class="qr-scanner-container hide">
+            <video id="qrVideo" class="qr-video"></video>
+            <div id="canvas" class="qr-canvas"></div>
+            <div class="btn-holder align-center">
+                <button id="stop-button" class="btn-primary">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./lib/qr-scanner.umd.min.js"></script>
+    <script src="./index.js"></script>
+</body>
+</html>
