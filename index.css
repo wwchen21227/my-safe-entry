@@ -462,9 +462,10 @@ header > a > b {
 }
 
 .qr-video {
-    visibility: hidden;
+    /* visibility: hidden;
     height: 0;
-    position: absolute;
+    position: absolute; */
+    width: 100%;
 }
 
 .entry-list {

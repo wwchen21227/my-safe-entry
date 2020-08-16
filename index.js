@@ -172,10 +172,10 @@ const EntryStore = (listKey) => {
     document.getElementById('start-button').addEventListener('click', () => {
         qrScanner.start().then(stream => {
             //console.log(stream);
-            toggleClass(scanContainer, 'hide');
-            toggleClass(qrScannerContainer, 'hide');
+            // toggleClass(scanContainer, 'hide');
+            // toggleClass(qrScannerContainer, 'hide');
 
-            document.getElementById('canvas').appendChild(qrScanner.$canvas);
+            //document.getElementById('canvas').appendChild(qrScanner.$canvas);
         });
     });
 
