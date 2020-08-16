@@ -135,34 +135,39 @@ const EntryStore = (listKey) => {
 
     let cacheKey = '';
     function setResult(label, result) {
-        const url = new URL(result);
-        const tenantKey = url.pathname.split('/')[2];
+        document.getElementById('debug').textContent = result;
+        //const url = new URL(result);
+        //const tenantKey = url.pathname.split('/')[2];
 
-        if(cacheKey !== tenantKey) {
-            cacheKey = tenantKey;
-            const isExist = entryList.some(entry => entry.key === tenantKey);
+        // if(cacheKey !== tenantKey) {
+        //     cacheKey = tenantKey;
+        //     const isExist = entryList.some(entry => entry.key === tenantKey);
 
-            if(!isExist) {
-                entryList.push({
-                    key: tenantKey,
-                    tenant: getTenantName(tenantKey),
-                    url: result,
-                    lastVisitDate: new Date(),
-                    visits: 1
-                });
+        //     if(!isExist) {
+        //         entryList.push({
+        //             key: tenantKey,
+        //             tenant: getTenantName(tenantKey),
+        //             url: result,
+        //             lastVisitDate: new Date(),
+        //             visits: 1
+        //         });
     
-                entryStore.save(entryList);
+        //         entryStore.save(entryList);
 
-                buildEntryListElem(sortEntryByDate(entryList));
-            }
+        //         buildEntryListElem(sortEntryByDate(entryList));
+        //     }
 
-            toggleClass(entryListContainer, 'hide');
-            toggleClass(qrScannerContainer, 'hide');
-        }
+        //     toggleClass(entryListContainer, 'hide');
+        //     toggleClass(qrScannerContainer, 'hide');
+        // }
     }
 
     QrScanner.hasCamera().then(hasCamera => console.log(`Camera detected ${hasCamera}`));
-    const qrScanner = new QrScanner(qrVideo, result => setResult(camQrResult, result));
+    const qrScanner = new QrScanner(qrVideo, 
+        result => setResult(camQrResult, result), 
+        error => {
+            document.getElementById('error').textContent = error
+        });
 
     document.getElementById('start-button').addEventListener('click', () => {
         qrScanner.start().then(stream => {
