@@ -129,6 +129,7 @@ const EntryStore = (listKey) => {
             toggleClass(entryListContainer, 'hide');
         }else {
             toggleClass(scanContainer, 'hide');
+            toggleClass(btnQrScan, 'hide');
         }
     });
 
@@ -151,6 +152,8 @@ const EntryStore = (listKey) => {
                 });
     
                 entryStore.save(entryList);
+
+                buildEntryListElem(sortEntryByDate(entryList));
             }
 
             toggleClass(entryListContainer, 'hide');
