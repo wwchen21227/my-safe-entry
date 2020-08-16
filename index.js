@@ -170,10 +170,10 @@ const EntryStore = (listKey) => {
         });
 
     document.getElementById('start-button').addEventListener('click', () => {
-        qrScanner.start().then(stream => {
+        qrScanner.start().then(() => {
             //console.log(stream);
-            // toggleClass(scanContainer, 'hide');
-            // toggleClass(qrScannerContainer, 'hide');
+            toggleClass(scanContainer, 'hide');
+            toggleClass(qrScannerContainer, 'hide');
 
             //document.getElementById('canvas').appendChild(qrScanner.$canvas);
         });
