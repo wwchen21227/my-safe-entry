@@ -62,6 +62,11 @@ const EntryStore = (listKey) => {
     const txtSearchBox = document.getElementById('txtSearchBox');
     const qrVideo = document.getElementById('qrVideo');
     const camQrResult = document.getElementById('cam-qr-result');
+        
+    const stopVideo = () => {
+        qrVideo.pause();
+        qrVideo.srcObject = null;
+    };
 
     const getTenantName = key => {
         const arr = key.split('-');
@@ -134,53 +139,51 @@ const EntryStore = (listKey) => {
     });
 
     let cacheKey = '';
-    function setResult(label, result) {
-        document.getElementById('debug').textContent = result;
-        //const url = new URL(result);
-        //const tenantKey = url.pathname.split('/')[2];
+    function setResult(result) {
+        const url = new URL(result);
+        const tenantKey = url.pathname.split('/')[2];
 
-        // if(cacheKey !== tenantKey) {
-        //     cacheKey = tenantKey;
-        //     const isExist = entryList.some(entry => entry.key === tenantKey);
+        if(cacheKey !== tenantKey) {
+            cacheKey = tenantKey;
+            const isExist = entryList.some(entry => entry.key === tenantKey);
 
-        //     if(!isExist) {
-        //         entryList.push({
-        //             key: tenantKey,
-        //             tenant: getTenantName(tenantKey),
-        //             url: result,
-        //             lastVisitDate: new Date(),
-        //             visits: 1
-        //         });
+            if(!isExist) {
+                entryList.push({
+                    key: tenantKey,
+                    tenant: getTenantName(tenantKey),
+                    url: result,
+                    lastVisitDate: new Date(),
+                    visits: 1
+                });
     
-        //         entryStore.save(entryList);
+                entryStore.save(entryList);
 
-        //         buildEntryListElem(sortEntryByDate(entryList));
-        //     }
+                buildEntryListElem(sortEntryByDate(entryList));
+            }
 
-        //     toggleClass(entryListContainer, 'hide');
-        //     toggleClass(qrScannerContainer, 'hide');
-        // }
+            toggleClass(entryListContainer, 'hide');
+            toggleClass(qrScannerContainer, 'hide');
+            toggleClass(btnQrScan, 'hide');
+        }
     }
 
-    QrScanner.hasCamera().then(hasCamera => console.log(`Camera detected ${hasCamera}`));
-    const qrScanner = new QrScanner(qrVideo, 
-        result => setResult(camQrResult, result), 
-        error => {
-            document.getElementById('error').textContent = error
-        });
-
     document.getElementById('start-button').addEventListener('click', () => {
-        qrScanner.start().then(() => {
-            //console.log(stream);
-            toggleClass(scanContainer, 'hide');
-            toggleClass(qrScannerContainer, 'hide');
+        // Use facingMode: environment to attemt to get the front camera on phones
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(function(stream) {
+                qrVideo.srcObject = stream;
+                qrVideo.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+                qrVideo.play();
+                
+                requestAnimationFrame(tick);
 
-            //document.getElementById('canvas').appendChild(qrScanner.$canvas);
-        });
+                toggleClass(scanContainer, 'hide');
+                toggleClass(qrScannerContainer, 'hide');
+            });
     });
 
     document.getElementById('stop-button').addEventListener('click', () => {
-        qrScanner.stop();
+        stopVideo();        
 
         if(entryList.length === 0) {
             toggleClass(scanContainer, 'hide');
@@ -194,14 +197,18 @@ const EntryStore = (listKey) => {
     });
 
     btnQrScan.addEventListener('click', () => {
-        qrScanner.start().then(stream => {
-            console.log(stream);
-            toggleClass(entryListContainer, 'hide');
-            toggleClass(btnQrScan, 'hide');
-            toggleClass(qrScannerContainer, 'hide');
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(function(stream) {
+                qrVideo.srcObject = stream;
+                qrVideo.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+                qrVideo.play();
+                
+                requestAnimationFrame(tick);
 
-            document.getElementById('canvas').appendChild(qrScanner.$canvas);
-        });
+                toggleClass(entryListContainer, 'hide');
+                toggleClass(btnQrScan, 'hide');
+                toggleClass(qrScannerContainer, 'hide');
+            });
     });
 
     let timeoutId = null;
@@ -213,4 +220,29 @@ const EntryStore = (listKey) => {
             console.log('fired')
         }, 300);
     });
+
+    const canvasElement = document.getElementById('canvas');
+    const canvas = canvasElement.getContext("2d");
+
+    function tick() {
+        if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+            console.log(qrVideo.videoHeight, qrVideo.videoWidth)
+        //   canvasElement.height = qrVideo.videoHeight;
+        //   canvasElement.width = qrVideo.videoHeight;
+          canvas.drawImage(qrVideo, 0, 0, canvasElement.width, canvasElement.height);
+
+          const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+
+          if (code) {
+            cancelAnimationFrame(tick);
+            stopVideo();
+            setResult(code.data);
+          }
+        }
+        requestAnimationFrame(tick);
+      }
 })();
+
