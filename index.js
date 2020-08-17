@@ -65,6 +65,12 @@ const EntryStore = (listKey) => {
         
     const stopVideo = () => {
         qrVideo.pause();
+
+        const tracks = qrVideo.srcObject ? qrVideo.srcObject.getTracks() : [];
+        for (const track of tracks) {
+            track.stop(); 
+        }
+        
         qrVideo.srcObject = null;
     };
 
