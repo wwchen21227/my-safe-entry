@@ -27,6 +27,12 @@ const searchTenant = (arr, keyword) => {
     return arr.filter(entry => regex.test(entry.tenant));
 };
 
+const formatDate = (value) => {
+    const date = new Date(value);
+    return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` + 
+            `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
 const EntryStore = (listKey) => {
     const save = (entries) => {
         localforage.setItem(listKey, entries)
@@ -83,11 +89,7 @@ const EntryStore = (listKey) => {
         return tenantName;
     };
 
-    const formatDate = (value) => {
-        const date = new Date(value);
-        return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` + 
-                `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-    }
+    
 
     const updateVisitEntry = (key) => {    
         let entry = entryList.find(entry => entry.key === key);
@@ -111,8 +113,15 @@ const EntryStore = (listKey) => {
 
     const buildEntryListItemElem = entry => {
         return `<li>` + 
-                    `<div><span class="entry-title">${entry.tenant}</span>` +
-                    `<div><span class="entry-date">Last visit: ${formatDate(entry.lastVisitDate)}</span></div></div>` + 
+                    `<div class="entry-list-content">` + 
+                        `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">` + 
+                            `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNgGAVUBEcZGBj+Q/FhYjUxkmDBf3L0MpFgAVmAFAuOILGJDqJRQFUwmkwJgtFkOvBgNJkSBKPJlDYAAMoeEjdsTPIRAAAAAElFTkSuQmCC"/>` +
+                        `</a>` +
+                        `<div>` + 
+                            `<span class="entry-title">${entry.tenant}</span>` +
+                            `<div><span class="entry-date">Last visit: ${formatDate(entry.lastVisitDate)}</span></div>` +
+                        `</div>` + 
+                    `</div>` + 
                     `<a class="btn btn-secondary btn-visit" href="${entry.url}" data-key="${entry.key}" target="_blank">Visit</a>` + 
                 `</li>`;
     };
@@ -232,9 +241,11 @@ const EntryStore = (listKey) => {
 
     function tick() {
         if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-            console.log(qrVideo.videoHeight, qrVideo.videoWidth)
-        //   canvasElement.height = qrVideo.videoHeight;
-        //   canvasElement.width = qrVideo.videoHeight;
+          const smallestDimension = Math.min(qrVideo.videoWidth, qrVideo.videoHeight);
+          const scanRegionSize = Math.round(2 / 3 * smallestDimension);
+
+          canvasElement.height = scanRegionSize;
+          canvasElement.width = scanRegionSize;
           canvas.drawImage(qrVideo, 0, 0, canvasElement.width, canvasElement.height);
 
           const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);

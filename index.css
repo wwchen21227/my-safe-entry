@@ -483,13 +483,31 @@ header > a > b {
     border-bottom: solid 1px #eee;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+}
+
+.entry-list-content {
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+    line-height: 1.2;
+}
+
+.entry-list-menu {
+  margin-left: -5px;
+  display: none;
+}
+
+.entry-list-menu > img{
+  opacity: 0.5;
+  margin-right: 10px;
 }
 
 .entry-title{
   font-weight: 700;
   color:var(--red-bg-color);
   letter-spacing: 0.25px;
+  font-size: 0.9rem;
 }
 
 .entry-date{
@@ -498,13 +516,24 @@ header > a > b {
 }
 
 .btn-qr-Scan{
-    position: absolute;
-    right: 20px;
-    top:10px;
+  position: absolute;
+  right: 25px;
+  top:10px;
+}
+
+.btn-qr-Scan:after {
+  content: 'Scan QR';
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  font-size: 0.55rem;
+  color: rgba(0,0,0,0.5);
+  width: 40px;
 }
 
 .btn-qr-Scan > img{
     width: 20px;
+    opacity: 0.7;
 }
 
 .search-box-holder{
