@@ -149,7 +149,7 @@ const EntryStore = (listKey) => {
             toggleClass(entryListContainer, 'hide');
         }else {
             toggleClass(scanContainer, 'hide');
-            toggleClass(btnQrScan, 'hide');
+            //toggleClass(btnQrScan, 'hide');
         }
     });
 
@@ -176,7 +176,7 @@ const EntryStore = (listKey) => {
                 buildEntryListElem(sortEntryByDate(entryList));
             }
         }
-        
+
         toggleClass(entryListContainer, 'hide');
         toggleClass(qrScannerContainer, 'hide');
         toggleClass(btnQrScan, 'hide');
