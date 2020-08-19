@@ -311,7 +311,20 @@ const QRScanner = ({
             Page.showEntryList();
         };
         
-        btnScan.addEventListener('click', handleScanClick);
+        btnScan.addEventListener('click', () => {
+            alert('click');
+
+            try{
+                // Use facingMode: environment to attemt to get the front camera on phones
+                navigator
+                .mediaDevices
+                .getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => qrScanner.startScan(stream, Page.showScan));
+            }
+            catch(err) {
+                alert(err)
+            }            
+        });
         
         btnQrScan.addEventListener('click', handleScanClick);
 
