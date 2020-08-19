@@ -315,7 +315,10 @@ const QRScanner = ({
             Page.showEntryList();
         };
         
-        btnScan.addEventListener('click', handleScanClick);
+        btnScan.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            qrScanner.startScan(stream, Page.showScan);
+        });
         
         btnQrScan.addEventListener('click', handleScanClick);
 
