@@ -141,6 +141,7 @@ const QRScanner = ({
 
     const startScan = (stream, callback) => {
         video.srcObject = stream;
+        video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
         video.play();
         
         requestAnimationFrame(check);
