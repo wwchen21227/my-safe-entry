@@ -310,9 +310,7 @@ const QRScanner = ({
             Page.showEntryList();
         };
         
-        btnScan.addEventListener('click', () => {
-            alert('start')
-        });
+        btnScan.addEventListener('click', handleScanClick);
         
         btnQrScan.addEventListener('click', handleScanClick);
 
