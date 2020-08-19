@@ -1,11 +1,21 @@
+/*** Features detection ***/
+
+const IsBrowserSupport = {
+    WebWorker: typeof (Worker) !== "undefined"
+}
+
+/*** End of feature detection ***/
 
 /*** Util function ***/
 const sortEntryByDate = (arr) => arr.sort((a, b) => b.lastVisitDate - a.lastVisitDate);
 
+const isNumber = (value) => !isNaN(value);
+
 const getTenantName = key => {
     const arr = key.split('-');
-    let tenantName = arr[2];
-    for(let i = 3; i < arr.length - 1; i++) {
+    const startIndex = isNumber(arr[2]) ? 3 : 2;
+    let tenantName = arr[startIndex];
+    for(let i = (startIndex+1); i < arr.length - 1; i++) {
         tenantName += ' ' + arr[i];
     }
     return tenantName;
@@ -113,7 +123,6 @@ const QRScanner = ({
     page
 }) => {
     const canvasContext = canvas.getContext("2d");
-
     const check = () => {
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
             const smallestDimension = Math.min(video.videoWidth, video.videoHeight);
@@ -173,7 +182,7 @@ const QRScanner = ({
 
 (function() {
     'use strict';
-    
+
     const LIST_KEY = 'entries-list';
     const entryStore = EntryStore(LIST_KEY);
     
