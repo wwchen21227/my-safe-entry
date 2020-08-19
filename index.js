@@ -258,16 +258,12 @@ const QRScanner = ({
 
     const startStream = () => {
         // Use facingMode: environment to attemt to get the front camera on phones
-        try{
-            navigator
+         navigator
             .mediaDevices
             .getUserMedia({ video: { facingMode: "environment" } })
             .then((stream) => qrScanner.startScan(stream, Page.showScan))
-            .catch(err => alert(err.name + ": " + err.message));
-        }
-        catch(err) {
-            alert(err);
-        }
+            .catch(err => console.error(err.name + ": " + err.message));
+        
     };
 
     const bindEvents = () => {
