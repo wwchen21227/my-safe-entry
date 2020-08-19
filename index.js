@@ -315,10 +315,7 @@ const QRScanner = ({
             Page.showEntryList();
         };
         
-        btnScan.addEventListener('click', async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            qrScanner.startScan(stream, Page.showScan);
-        });
+        btnScan.addEventListener('click', handleScanClick);
         
         btnQrScan.addEventListener('click', handleScanClick);
 
