@@ -1,0 +1,11 @@
+# If skip_processing = true, all other settings are ignored
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  minify = true
+[build.processing.js]
+  minify = true
+[build.processing.html]
+  pretty_urls = true
+[build.processing.images]
+  compress = true
