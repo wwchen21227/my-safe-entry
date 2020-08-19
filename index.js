@@ -261,7 +261,8 @@ const QRScanner = ({
         navigator
             .mediaDevices
             .getUserMedia({ video: { facingMode: "environment" } })
-            .then((stream) => qrScanner.startScan(stream, Page.showScan));
+            .then((stream) => qrScanner.startScan(stream, Page.showScan))
+            .catch(err => alert(err.name + ": " + err.message));
     };
 
     const bindEvents = () => {
@@ -308,20 +309,7 @@ const QRScanner = ({
             Page.showEntryList();
         };
         
-        btnScan.addEventListener('click', () => {
-            alert('click');
-
-            try{
-                // Use facingMode: environment to attemt to get the front camera on phones
-                navigator
-                .mediaDevices
-                .getUserMedia({ video: { facingMode: "environment" } })
-                //.then((stream) => qrScanner.startScan(stream, Page.showScan));
-            }
-            catch(err) {
-                alert(err)
-            }            
-        });
+        btnScan.addEventListener('click', handleScanClick);
         
         btnQrScan.addEventListener('click', handleScanClick);
 
