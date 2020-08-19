@@ -268,7 +268,6 @@ const QRScanner = ({
 
     const bindEvents = () => {
         const handleScanClick = () => {
-            alert('click');
             startStream();
         };
     
