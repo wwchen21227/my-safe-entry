@@ -232,7 +232,8 @@ const QRScanner = ({
                 txtTenantName.value = getTenantName(tenantKey);
                 txtTenantName.setAttribute('data-key', tenantKey);
                 txtTenantName.setAttribute('data-url', url);
-    
+                txtTenantName.focus();
+                
                 CssClass.addClass(qrScannerContainer, 'hide');
                 CssClass.removeClass(overlayContainer, 'hide');
             }else {
