@@ -253,9 +253,6 @@ const QRScanner = ({
     const qrScanner = QRScanner({ 
         video: qrVideo,
         canvas: canvasElem,
-        entryStore,
-        entryList,
-        uiBuilder,
         page: Page
     });
 
@@ -319,7 +316,7 @@ const QRScanner = ({
                 navigator
                 .mediaDevices
                 .getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => qrScanner.startScan(stream, Page.showScan));
+                //.then((stream) => qrScanner.startScan(stream, Page.showScan));
             }
             catch(err) {
                 alert(err)
