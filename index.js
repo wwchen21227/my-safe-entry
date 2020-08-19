@@ -110,9 +110,6 @@ const UIBuilder = ({
 const QRScanner = ({
     video,
     canvas,
-    entryStore,
-    entryList,
-    uiBuilder,
     page
 }) => {
     const canvasContext = canvas.getContext("2d");
@@ -312,8 +309,10 @@ const QRScanner = ({
             
             Page.showEntryList();
         };
-
-        [btnScan, btnQrScan].forEach(elem => elem.addEventListener('click', handleScanClick));
+        
+        btnScan.addEventListener('click', handleScanClick);
+        
+        btnQrScan.addEventListener('click', handleScanClick);
 
         btnCancelScan.addEventListener('click', handleCancleClick);
     
