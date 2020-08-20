@@ -82,7 +82,7 @@ const UIBuilder = ({
     };
 
     const buildEntryListItemElem = entry => {
-        return `<li>` + 
+        return `<li data-key="${entry.key}">` + 
                     `<div class="entry-list-content">` + 
                         `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">` + 
                             `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNgGAVUBEcZGBj+Q/FhYjUxkmDBf3L0MpFgAVmAFAuOILGJDqJRQFUwmkwJgtFkOvBgNJkSBKPJlDYAAMoeEjdsTPIRAAAAAElFTkSuQmCC"/>` +
@@ -171,7 +171,7 @@ const QRScanner = ({
 
     function setResult(result) {
         const url = new URL(result);
-        page.showOverlay(url);
+        page.showFormOverlay(url);
     }
 
     return {
@@ -183,15 +183,21 @@ const QRScanner = ({
 (function() {
     'use strict';
 
+    const PageUrl = {
+        LANDING: 'landing',
+        LIST: 'list',
+        SCAN: 'scan',
+        ABOUT: 'about'
+    };
+
     const LIST_KEY = 'entries-list';
     const entryStore = EntryStore(LIST_KEY);
     
     let entryList = [];
     let timeoutId = null;
 
-    const scanContainer = document.getElementById('scanContainer');
+    const app = document.getElementById('app');
     const qrScannerContainer = document.getElementById('qrScannerContainer');
-    const entryListContainer = document.getElementById('entryListContainer');
     const entryListElem = document.getElementById('entryList');
     const btnQrScan = document.getElementById('btnQrScan');
     const txtSearchBox = document.getElementById('txtSearchBox');
@@ -200,31 +206,22 @@ const QRScanner = ({
     const btnCancelScan = document.getElementById('btnCancelScan');
     const overlayContainer = document.getElementById('overlay');
     const btnSave = document.getElementById('btnSave');
+    const btnMenu = document.getElementById('btnMenu');
+    const btnCloseMenu = document.getElementById('btnCloseMenu');
     const txtTenantName = document.getElementById('txtTenantName');
     const canvasElem = document.getElementById('canvas');
 
     const Page = {
         showLanding: () => {
-            CssClass.addClass(btnQrScan, 'hide');
-            CssClass.addClass(qrScannerContainer, 'hide');
-            
-            CssClass.removeClass(scanContainer, 'hide');
+            app.dataset.page = PageUrl.LANDING;
         },
         showEntryList: () => {    
-            CssClass.addClass(qrScannerContainer, 'hide');
-            CssClass.addClass(overlayContainer, 'hide');
-            
-            CssClass.removeClass(entryListContainer, 'hide');
-            CssClass.removeClass(btnQrScan, 'hide');
+            app.dataset.page = PageUrl.LIST;
         },
         showScan: () => {
-            CssClass.addClass(scanContainer, 'hide');
-            CssClass.addClass(entryListContainer, 'hide');
-            CssClass.addClass(btnQrScan, 'hide');
-    
-            CssClass.removeClass(qrScannerContainer, 'hide');
+            app.dataset.page = PageUrl.SCAN;
         },
-        showOverlay: (url) => {
+        showFormOverlay: (url) => {
             const tenantKey = url.pathname.split('/')[2];
             const isExist = entryList.some(entry => entry.key === tenantKey);
 
@@ -235,11 +232,22 @@ const QRScanner = ({
                 
                 CssClass.addClass(qrScannerContainer, 'hide');
                 CssClass.removeClass(overlayContainer, 'hide');
-                
+
                 txtTenantName.focus();
             }else {
                 Page.showEntryList();
             }           
+        },
+        showAbout: () => {
+            app.dataset.page = PageUrl.ABOUT;          
+        },
+        closeAbout: () => {     
+            app.dataset.page = 
+                entryList.length === 0 
+                ? 
+                PageUrl.LANDING
+                :
+                PageUrl.LIST;    
         }
     };
 
@@ -274,7 +282,6 @@ const QRScanner = ({
             .getUserMedia({ video: { facingMode: "environment" } })
             .then((stream) => qrScanner.startScan(stream, Page.showScan))
             .catch(err => console.error(err.name + ": " + err.message));
-        
     };
 
     const bindEvents = () => {
@@ -287,7 +294,7 @@ const QRScanner = ({
             if(entryList.length === 0) {
                 Page.showLanding();
             }else {
-               Page.showEntryList();
+                Page.showEntryList();
             }  
         };
         
@@ -330,6 +337,13 @@ const QRScanner = ({
         txtSearchBox.addEventListener('keyup', handleSearchKeyup);
 
         btnSave.addEventListener('click', handleSaveClick);
+
+        btnMenu.addEventListener('click', () => {
+            Page.showAbout();
+        });
+        btnCloseMenu.addEventListener('click', () => {
+            Page.closeAbout();
+        });
     };
     
     const init = () => {
@@ -348,6 +362,8 @@ const QRScanner = ({
                     Page.showLanding();
                 }
             });
+
+        CssClass.removeClass(app, 'loading');
     };
 
     init();

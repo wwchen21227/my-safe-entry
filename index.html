@@ -9,24 +9,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="./images/favicon/site.webmanifest">
   <link rel="stylesheet" href="index.css?v=1.0">
 
 </head>
 
 <body>
-    <div id="container">
+    <div id="app" class="app-container loading">
         <header class="header">
+            <a id="btnMenu" href="javascript:void(0)" class="btn-menu hide-in-scan hide-in-about">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAKElEQVRIiWNgGAXDHjAisf/TwmwmKhs6CgYhGE1Fo4ByMJqKRsEQAADWCQMKYvEFtQAAAABJRU5ErkJggg=="/>
+            </a>
             <a href="#">MySafe<b>Entry</b></a>
-            <a id="btnQrScan" href="javascript:void(0)" class="btn-qr-Scan hide">
+            <a id="btnQrScan" href="javascript:void(0)" 
+                class="btn-qr-Scan show-in-list">
                 <img src="images/qr-scan.png"/>
             </a>
         </header>
 
-        <div id="entryListContainer" class="entry-list-container hide">
+        <div id="scanContainer" 
+            class="scan-container page" 
+            data-page-url="landing">
+            <div class="scan-message-box">
+                <h3>Scan QR Code</h3>
+                <p>
+                    Click <b>Scan To Save</b> button to bookmark your SafeEntry.
+                </p>
+            </div>
+            <img class="qr-image" src="./images/qrcode.png"/>
+            <div class="btn-holder align-center">
+                <button id="btnScan" class="btn-primary">Scan to save</button>
+            </div>
+        </div>
+
+        <div id="entryListContainer" 
+            class="entry-list-container page" 
+            data-page-url="list">
             <div class="search-box-holder">
                 <input id="txtSearchBox" type="text" class="search-box" placeholder="Search ..."/>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="search-icon">
@@ -36,26 +57,41 @@
             <ul id="entryList" class="entry-list"></ul>
         </div>
 
-        <div id="scanContainer" class="scan-container hide">
-            <div class="scan-message-box">
-                <h3>Scan QR Code</h3>
-                <p>
-                    Click <b>Scan to Save</b> button to bookmark your SafeEntry.
-                </p>
-            </div>
-            <img class="qr-image" src="./images/qrcode.png"/>
-            <div class="btn-holder align-center">
-                <button id="btnScan" class="btn-primary">Scan to save</button>
-            </div>
-        </div>
-
-        <div id="qrScannerContainer" class="qr-scanner-container hide align-center">
+        <div id="qrScannerContainer" 
+            class="qr-scanner-container page align-center"
+            data-page-url="scan">
             <video id="qrVideo" class="qr-video" playsinline="true"></video>
             <canvas id="canvas" class="qr-canvas"></canvas>
             <span id="debug"></span>
             <span id="error"></span>
             <div class="btn-holder align-center">
                 <button id="btnCancelScan" class="btn-primary">Cancel</button>
+            </div>
+        </div>
+
+        <div id="aboutContainer" 
+            class="about-scanner-container page"
+            data-page-url="about">
+            <h1>About</h1>
+            <p>
+                MySafeEntry is a simple bookmarking service aim to 
+                to get rid of the hassle for repeating QR Scan.
+            </p>
+            <h2>Data Privacy</h2>
+            <p>
+                MySafeEntry don't collect any data from you. All the data will be store on your phone.
+            </p>
+            <!-- <h2>Share</h2>
+            <p>
+                If you like this service, please don't hesitate to share it with your relatives and friends. :)
+                <br/><br/>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://mysafeentry.netlify.app&display=popup" target="_blank">
+                    <img class="v-align-middle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAAAzUlEQVRIie2Wuw3CMBBAnyOE6NJQsABz0BKxGUNkCiq2oKMmKVkAIREqpHMU4w/nIsJPuiLR3T2fnFiGwj9yAHpgUIoOaELEnaL0E7exxEyIh5DVJWC5qkwSL1riE7AD1sAK2ADX2Cax+3dmeoDLKM9CY+Ij8FLoEz1xLWpb4OnIs9D4qitR8wCWjjzjfEgUyx7falV+JyPC9f4e2zRkX33UvppcB8jWl7BIbCwnCN1ji9kfmUVcxEHiPoOnC0lqiLt3SVz3rf3vay/MjTdlPnnc9YAe7gAAAABJRU5ErkJggg=="/> 
+                    <span class="v-align-middle">facebook</span>
+                </a>
+            </p> -->
+            <div class="btn-holder align-center">
+                <button id="btnCloseMenu" class="btn-primary">Close</button>
             </div>
         </div>
 
@@ -70,6 +106,12 @@
                 </form>
             </div>
         </div>
+        <div class="sk-folding-cube">
+            <div class="sk-cube1 sk-cube"></div>
+            <div class="sk-cube2 sk-cube"></div>
+            <div class="sk-cube4 sk-cube"></div>
+            <div class="sk-cube3 sk-cube"></div>
+          </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/localforage@1.9.0/dist/localforage.min.js"></script>
