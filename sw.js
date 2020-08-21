@@ -1,4 +1,4 @@
-const cacheName = 'myse-v1.1';
+const cacheName = 'myse-v1.3';
 const staticAssets = [
     './',
     './index.html',
@@ -6,6 +6,19 @@ const staticAssets = [
     './lib/jsQR.js',
     './index.css'
 ];
+
+self.addEventListener('activate', (event) => {
+    var cacheKeeplist = [cacheName];
+    event.waitUntil(
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (cacheKeeplist.indexOf(key) === -1) {
+                    return caches.delete(key);
+                }
+            }));
+        })
+    );
+});
 
 async function cacheFirst(req) {
     const cache = await caches.open(cacheName);
