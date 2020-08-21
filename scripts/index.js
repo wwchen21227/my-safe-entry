@@ -1,4 +1,15 @@
 /*** Features detection ***/
+async function registerSW() {
+    if ('serviceWorker' in navigator) {
+        try {
+            await navigator.serviceWorker.register('../sw.js');
+        } catch (e) {
+            alert('ServiceWorker registration failed. Sorry about that.');
+        }
+    } else {
+        document.querySelector('.alert').removeAttribute('hidden');
+    }
+}
 
 const IsBrowserSupport = {
     WebWorker: typeof (Worker) !== "undefined"
@@ -153,10 +164,20 @@ const UIBuilder = ({
         } else {
             entryListElem.innerHTML = '<li>No result found.</li>';
         }
-    }
+    };
+
+
+    const moveEntryToTop = (key) => {
+        const entryElem = entryListElem.querySelector(`[data-key="${key}"]`);
+        entryListElem.prepend(entryElem);
+
+        CssClass.addClass(entryElem, 'highlight');
+        setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
+    };
 
     return {
-        buildEntryListElem
+        buildEntryListElem,
+        moveEntryToTop
     }
 };
 
@@ -176,9 +197,9 @@ const QRScanner = ({
             canvas.height = scanRegionSize;
             canvas.width = scanRegionSize;
 
-            canvasContext.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            canvasContext.drawImage(qrVideo, 0, 0, scanRegionSize, scanRegionSize);
 
-            const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+            const imageData = canvasContext.getImageData(0, 0, scanRegionSize, scanRegionSize);
 
             const code = jsQR(imageData.data, imageData.width, imageData.height, {
                 inversionAttempts: "dontInvert",
@@ -239,8 +260,9 @@ const QRScanner = ({
     const entryStore = EntryStore(LIST_KEY);
 
     let entryList = [];
-    
+
     let timeoutId = null;
+    let currentEdit = null;
 
     const app = document.getElementById('app');
     const qrScannerContainer = document.getElementById('qrScannerContainer');
@@ -257,44 +279,6 @@ const QRScanner = ({
     const txtTenantName = document.getElementById('txtTenantName');
     const canvasElem = document.getElementById('canvas');
 
-    const Page = {
-        showLanding: () => {
-            app.dataset.page = PageUrl.LANDING;
-        },
-        showEntryList: () => {
-            app.dataset.page = PageUrl.LIST;
-        },
-        showScan: () => {
-            app.dataset.page = PageUrl.SCAN;
-        },
-        showFormOverlay: (url) => {
-            const tenantKey = url.pathname.split('/')[2];
-            const isExist = entryList.some(entry => entry.key === tenantKey);
-
-            if (!isExist) {
-                txtTenantName.value = getTenantName(tenantKey);
-                txtTenantName.setAttribute('data-key', tenantKey);
-                txtTenantName.setAttribute('data-url', url);
-
-                CssClass.addClass(qrScannerContainer, 'hide');
-                CssClass.removeClass(overlayContainer, 'hide');
-
-                txtTenantName.focus();
-            } else {
-                Page.showEntryList();
-            }
-        },
-        showAbout: () => {
-            app.dataset.page = PageUrl.ABOUT;
-        },
-        closeAbout: () => {
-            app.dataset.page =
-                entryList.length === 0 ?
-                PageUrl.LANDING :
-                PageUrl.LIST;
-        }
-    };
-
     const updateVisitEntry = (key) => {
         let entry = entryList.find(entry => entry.key === key);
         entry.lastVisitDate = new Date();
@@ -305,14 +289,6 @@ const QRScanner = ({
         entryStore.save(sortedList);
         uiBuilder.buildEntryListElem(sortedList);
     };
-
-    const handleDeleteEntry = (key) => {
-        const removed = entryList.filter(entry => entry.key !== key)
-        entryStore.save(removed);
-        uiBuilder.buildEntryListElem(removed);
-    }
-
-    let currentEdit = null;
 
     const uiBuilder = UIBuilder({
         entryListElem,
@@ -331,6 +307,45 @@ const QRScanner = ({
         }
     });
 
+    const Page = {
+        render: (url) => {
+            app.dataset.page = url
+        },
+        showFormOverlay: (url) => {
+            const tenantKey = url.pathname.split('/')[2];
+            const isExist = entryList.some(entry => entry.key === tenantKey);
+
+            if (!isExist) {
+                txtTenantName.value = getTenantName(tenantKey);
+                txtTenantName.setAttribute('data-key', tenantKey);
+                txtTenantName.setAttribute('data-url', url);
+
+                CssClass.addClass(qrScannerContainer, 'hide');
+                CssClass.removeClass(overlayContainer, 'hide');
+
+                txtTenantName.focus();
+            } else {
+                uiBuilder.moveEntryToTop(tenantKey);
+                Page.render(PageUrl.LIST);
+            }
+        },
+        showAbout: () => {
+            app.dataset.page = PageUrl.ABOUT;
+        },
+        closeAbout: () => {
+            app.dataset.page =
+                entryList.length === 0 ?
+                PageUrl.LANDING :
+                PageUrl.LIST;
+        }
+    };
+
+    const handleDeleteEntry = (key) => {
+        const removed = entryList.filter(entry => entry.key !== key)
+        entryStore.save(removed);
+        uiBuilder.buildEntryListElem(removed);
+    }
+
     const qrScanner = QRScanner({
         video: qrVideo,
         canvas: canvasElem,
@@ -346,7 +361,7 @@ const QRScanner = ({
                     facingMode: "environment"
                 }
             })
-            .then((stream) => qrScanner.startScan(stream, Page.showScan))
+            .then((stream) => qrScanner.startScan(stream, () => Page.render(PageUrl.SCAN)))
             .catch(err => console.error(err.name + ": " + err.message));
     };
 
@@ -358,9 +373,9 @@ const QRScanner = ({
         const handleCancleClick = () => {
             qrScanner.stopScan();
             if (entryList.length === 0) {
-                Page.showLanding();
+                Page.render(PageUrl.LANDING);
             } else {
-                Page.showEntryList();
+                Page.render(PageUrl.LIST);
             }
         };
 
@@ -403,7 +418,7 @@ const QRScanner = ({
 
                 uiBuilder.buildEntryListElem(sortEntryByDate(entryList));
 
-                Page.showEntryList();
+                Page.render(PageUrl.LIST);
             } else {
                 handleUpdate();
             }
@@ -420,10 +435,15 @@ const QRScanner = ({
         btnSave.addEventListener('click', handleSaveClick);
 
         btnMenu.addEventListener('click', () => {
-            Page.showAbout();
+            Page.render(PageUrl.ABOUT);
         });
+
         btnCloseMenu.addEventListener('click', () => {
-            Page.closeAbout();
+            if (entryList.length === 0) {
+                Page.render(PageUrl.LANDING);
+            } else {
+                Page.render(PageUrl.LIST);
+            }
         });
     };
 
@@ -438,13 +458,17 @@ const QRScanner = ({
 
                     uiBuilder.buildEntryListElem(entryList);
 
-                    Page.showEntryList();
+                    Page.render(PageUrl.LIST);
                 } else {
-                    Page.showLanding();
+                    Page.render(PageUrl.LANDING);
                 }
             });
 
         CssClass.removeClass(app, 'loading');
+
+        window.addEventListener('load', () => {
+            registerSW();
+        });
     };
 
     init();
