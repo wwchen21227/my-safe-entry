@@ -353,9 +353,8 @@
   }
 
   :root {
-    --main-bg-color: #fff;
+    --white-color: #fff;
     --red-bg-color: #ff6565;
-    --white-text-color: #fff;
     --primary-text-color: #24292e;
     --dimmer-text-color:rgba(0,0,0,0.5);
     --green-bg-color: #1eaf71;
@@ -387,7 +386,7 @@ body {
     font-size: 16px;
     line-height: 1.5;
     color: var(--primary-text-color);
-    background-color: var(--main-bg-color);
+    background-color: var(--white-color);
 }
 
 a {
@@ -406,7 +405,7 @@ h2{
 
 header{
     height: 46px;
-    background-color: #fff;
+    background-color: var(--white-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -460,7 +459,7 @@ header img{
     background-color: var(--red-bg-color);
     border:0;
     outline: 0;
-    color: var(--white-text-color);
+    color: var(--white-color);
     padding: 15px;
     text-transform: uppercase;
     border-radius: 1.5rem;
@@ -473,7 +472,7 @@ header img{
   border:0;
   outline: 0;
   letter-spacing: 0.25px;
-  color: var(--white-text-color);
+  color: var(--white-color);
   padding: 10px 15px;
   text-transform: uppercase;
   border-radius: 5px;
@@ -490,11 +489,6 @@ header img{
     position: absolute;
 }
 
-.qr-canvas {
-  width: 100%;
-  height: 50%;
-}
-
 .entry-list {
     list-style: none;
     margin: 0;
@@ -507,6 +501,12 @@ header img{
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background-color .5s;
+    background-color: var(--white-color)
+}
+
+.entry-list > li.highlight {
+  background-color: #FFFFCC;
 }
 
 .entry-list-content {
@@ -564,7 +564,7 @@ header img{
   padding: 10px 1rem 5px;
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--white-color);
 }
 
 .search-icon{
