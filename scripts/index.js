@@ -15,7 +15,7 @@ const getTenantName = key => {
     const arr = key.split('-');
     const startIndex = isNumber(arr[2]) ? 3 : 2;
     let tenantName = arr[startIndex];
-    for(let i = (startIndex+1); i < arr.length - 1; i++) {
+    for (let i = (startIndex + 1); i < arr.length - 1; i++) {
         tenantName += ' ' + arr[i];
     }
     return tenantName;
@@ -28,8 +28,8 @@ const searchTenant = (arr, keyword) => {
 
 const formatDate = (value) => {
     const date = new Date(value);
-    return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` + 
-            `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+    return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` +
+        `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
 /*** End Util function ***/
 
@@ -42,7 +42,7 @@ const CssClass = {
     toggleClass: (elem, className) => {
         if (CssClass.hasClass(elem, className)) {
             CssClass.removeClass(elem, className);
-        }else {
+        } else {
             CssClass.addClass(elem, className);
         }
     }
@@ -53,59 +53,104 @@ const CssClass = {
 const EntryStore = (listKey) => {
     const save = (entries) => {
         localforage.setItem(listKey, entries)
-        .then(value => console.log(value))
-        .catch(function (err) {
-            console.error(err);
-        });
+            .then(value => console.log(value))
+            .catch(function (err) {
+                console.error(err);
+            });
     };
 
     const getAllEntries = () => {
         return localforage.getItem(listKey);
-    }
+    };
 
     return {
         save,
         getAllEntries
-    }
+    };
 };
 
 /*** Building entry list ***/
 
 const UIBuilder = ({
     entryListElem,
-    handleVisitClick
+    handleVisitClick,
+    handleDelete,
+    showEditOverlay
 }) => {
-   
+
     const bindListEvents = (list) => {
         const buttons = list.querySelectorAll('.btn-visit');
         buttons.forEach(button => button.addEventListener('click', handleVisitClick));
     };
 
+    const bindDeleteEvent = (list) => {
+        const ddDelete = list.querySelectorAll('#dropdown-row__delete');
+        ddDelete.forEach(row => row.addEventListener('click', handleDelete))
+    }
+
+    const bindShowOverlayEvent = (list) => {
+        const ddEdit = list.querySelectorAll('#dropdown-row__edit');
+        ddEdit.forEach(row => row.addEventListener('click', showEditOverlay))
+    }
+
+    let opened = null;
+    const toggleVisibility = e => e.classList.toggle('show');
+
+    const handleDropdown = e => {
+        const clickedItem = e.parentElement.querySelector('.entry-list-dropdown');
+        toggleVisibility(clickedItem);
+
+        if (!opened) {
+            opened = clickedItem;
+        } else if (opened == clickedItem) {
+            opened = null;
+        } else {
+            toggleVisibility(opened);
+            opened = clickedItem;
+        }
+    };
+
+    const handleToggleClick = e => {
+        if (e.target.parentElement.className.includes('entry-list-menu')) {
+            handleDropdown(e.target.parentElement);
+        } else if (opened) {
+            toggleVisibility(opened);
+            opened = null;
+        }
+    };
+
+    document.addEventListener('click', handleToggleClick);
+
     const buildEntryListItemElem = entry => {
-        return `<li data-key="${entry.key}">` + 
-                    `<div class="entry-list-content">` + 
-                        `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">` + 
-                            `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNgGAVUBEcZGBj+Q/FhYjUxkmDBf3L0MpFgAVmAFAuOILGJDqJRQFUwmkwJgtFkOvBgNJkSBKPJlDYAAMoeEjdsTPIRAAAAAElFTkSuQmCC"/>` +
-                        `</a>` +
-                        `<div>` + 
-                            `<span class="entry-title">${entry.tenant}</span>` +
-                            `<div><span class="entry-date">Last visit: ${formatDate(entry.lastVisitDate)}</span></div>` +
-                        `</div>` + 
-                    `</div>` + 
-                    `<a class="btn btn-secondary btn-visit" href="${entry.url}" data-key="${entry.key}" target="_blank">Visit</a>` + 
-                `</li>`;
+        return `<li data-key="${entry.key}">` +
+            `<div class="entry-list-content">` +
+            `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">` +
+            `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNgGAVUBEcZGBj+Q/FhYjUxkmDBf3L0MpFgAVmAFAuOILGJDqJRQFUwmkwJgtFkOvBgNJkSBKPJlDYAAMoeEjdsTPIRAAAAAElFTkSuQmCC"/>` +
+            `</a>` +
+            `<div class="entry-list-dropdown">` +
+            `<div class="dropdown-row" id="dropdown-row__edit" data-key="${entry.key}">Edit</div>` +
+            `<div class="dropdown-row" id="dropdown-row__delete" data-key="${entry.key}">Delete</div>` +
+            `</div>` +
+            `<div>` +
+            `<span class="entry-title">${entry.tenant}</span>` +
+            `<div><span class="entry-date">Last visit: ${formatDate(entry.lastVisitDate)}</span></div>` +
+            `</div>` +
+            `</div>` +
+            `<a class="btn btn-secondary btn-visit" href="${entry.url}" data-key="${entry.key}" target="_blank">Visit</a>` +
+            `</li>`;
     };
 
     const buildEntryListElem = entries => {
         let list = ``;
-        if(entries.length > 0)  {
+        if (entries.length > 0) {
             entries.forEach(entry => {
                 list += buildEntryListItemElem(entry);
             });
             entryListElem.innerHTML = list;
             bindListEvents(entryListElem);
-        }
-        else {
+            bindDeleteEvent(entryListElem);
+            bindShowOverlayEvent(entryListElem);
+        } else {
             entryListElem.innerHTML = '<li>No result found.</li>';
         }
     }
@@ -152,7 +197,7 @@ const QRScanner = ({
         video.srcObject = stream;
         video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
         video.play();
-        
+
         requestAnimationFrame(check);
 
         callback();
@@ -163,9 +208,9 @@ const QRScanner = ({
 
         const tracks = video.srcObject ? video.srcObject.getTracks() : [];
         for (const track of tracks) {
-            track.stop(); 
+            track.stop();
         }
-        
+
         video.srcObject = null;
     };
 
@@ -180,7 +225,7 @@ const QRScanner = ({
     };
 };
 
-(function() {
+(function () {
     'use strict';
 
     const PageUrl = {
@@ -192,8 +237,9 @@ const QRScanner = ({
 
     const LIST_KEY = 'entries-list';
     const entryStore = EntryStore(LIST_KEY);
-    
+
     let entryList = [];
+    
     let timeoutId = null;
 
     const app = document.getElementById('app');
@@ -215,7 +261,7 @@ const QRScanner = ({
         showLanding: () => {
             app.dataset.page = PageUrl.LANDING;
         },
-        showEntryList: () => {    
+        showEntryList: () => {
             app.dataset.page = PageUrl.LIST;
         },
         showScan: () => {
@@ -225,33 +271,31 @@ const QRScanner = ({
             const tenantKey = url.pathname.split('/')[2];
             const isExist = entryList.some(entry => entry.key === tenantKey);
 
-            if(!isExist) {
+            if (!isExist) {
                 txtTenantName.value = getTenantName(tenantKey);
                 txtTenantName.setAttribute('data-key', tenantKey);
                 txtTenantName.setAttribute('data-url', url);
-                
+
                 CssClass.addClass(qrScannerContainer, 'hide');
                 CssClass.removeClass(overlayContainer, 'hide');
 
                 txtTenantName.focus();
-            }else {
+            } else {
                 Page.showEntryList();
-            }           
+            }
         },
         showAbout: () => {
-            app.dataset.page = PageUrl.ABOUT;          
+            app.dataset.page = PageUrl.ABOUT;
         },
-        closeAbout: () => {     
-            app.dataset.page = 
-                entryList.length === 0 
-                ? 
-                PageUrl.LANDING
-                :
-                PageUrl.LIST;    
+        closeAbout: () => {
+            app.dataset.page =
+                entryList.length === 0 ?
+                PageUrl.LANDING :
+                PageUrl.LIST;
         }
     };
 
-    const updateVisitEntry = (key) => {    
+    const updateVisitEntry = (key) => {
         let entry = entryList.find(entry => entry.key === key);
         entry.lastVisitDate = new Date();
         entry.visits += 1;
@@ -262,14 +306,32 @@ const QRScanner = ({
         uiBuilder.buildEntryListElem(sortedList);
     };
 
+    const handleDeleteEntry = (key) => {
+        const removed = entryList.filter(entry => entry.key !== key)
+        entryStore.save(removed);
+        uiBuilder.buildEntryListElem(removed);
+    }
+
+    let currentEdit = null;
+
     const uiBuilder = UIBuilder({
-         entryListElem,
-         handleVisitClick: (e) => {
+        entryListElem,
+        handleVisitClick: (e) => {
             updateVisitEntry(e.target.dataset.key);
+        },
+        handleDelete: (e) => {
+            handleDeleteEntry(e.target.dataset.key)
+        },
+        showEditOverlay: (e) => {
+            CssClass.removeClass(overlayContainer, 'hide');
+            const selected = entryList.find(entry => entry.key === e.target.dataset.key);
+            txtTenantName.value = selected.tenant;
+            currentEdit = selected.key;
+            txtTenantName.focus();
         }
     });
 
-    const qrScanner = QRScanner({ 
+    const qrScanner = QRScanner({
         video: qrVideo,
         canvas: canvasElem,
         page: Page
@@ -277,9 +339,13 @@ const QRScanner = ({
 
     const startStream = () => {
         // Use facingMode: environment to attemt to get the front camera on phones
-         navigator
+        navigator
             .mediaDevices
-            .getUserMedia({ video: { facingMode: "environment" } })
+            .getUserMedia({
+                video: {
+                    facingMode: "environment"
+                }
+            })
             .then((stream) => qrScanner.startScan(stream, Page.showScan))
             .catch(err => console.error(err.name + ": " + err.message));
     };
@@ -288,16 +354,16 @@ const QRScanner = ({
         const handleScanClick = () => {
             startStream();
         };
-    
+
         const handleCancleClick = () => {
-            qrScanner.stopScan();        
-            if(entryList.length === 0) {
+            qrScanner.stopScan();
+            if (entryList.length === 0) {
                 Page.showLanding();
-            }else {
+            } else {
                 Page.showEntryList();
-            }  
+            }
         };
-        
+
         const handleSearchKeyup = (e) => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
@@ -306,34 +372,49 @@ const QRScanner = ({
             }, 300);
         };
 
+        const handleUpdate = () => {
+            const updatedList = entryList.map(entry => entry.key === currentEdit ? {
+                ...entry,
+                tenant: txtTenantName.value
+            } : entry);
+
+            entryStore.save(updatedList);
+            uiBuilder.buildEntryListElem(updatedList);
+            currentEdit = null;
+            CssClass.addClass(overlayContainer, 'hide');
+        }
+
         const handleSaveClick = () => {
-            if(txtTenantName.value.length === 0) {
+            if (txtTenantName.value.length === 0) {
                 CssClass.addClass(txtTenantName, 'error');
                 txtTenantName.focus();
                 return;
             }
-            
-            entryList.push({
-                key: txtTenantName.dataset.key,
-                tenant: txtTenantName.value,
-                url: txtTenantName.dataset.url,
-                lastVisitDate: new Date(),
-                visits: 1
-            });
+            if (!currentEdit) {
+                entryList.push({
+                    key: txtTenantName.dataset.key,
+                    tenant: txtTenantName.value,
+                    url: txtTenantName.dataset.url,
+                    lastVisitDate: new Date(),
+                    visits: 1
+                });
 
-            entryStore.save(entryList);
+                entryStore.save(entryList);
 
-            uiBuilder.buildEntryListElem(sortEntryByDate(entryList));
-            
-            Page.showEntryList();
+                uiBuilder.buildEntryListElem(sortEntryByDate(entryList));
+
+                Page.showEntryList();
+            } else {
+                handleUpdate();
+            }
         };
-        
+
         btnScan.addEventListener('click', handleScanClick);
-        
+
         btnQrScan.addEventListener('click', handleScanClick);
 
         btnCancelScan.addEventListener('click', handleCancleClick);
-    
+
         txtSearchBox.addEventListener('keyup', handleSearchKeyup);
 
         btnSave.addEventListener('click', handleSaveClick);
@@ -345,20 +426,20 @@ const QRScanner = ({
             Page.closeAbout();
         });
     };
-    
+
     const init = () => {
         bindEvents();
 
         entryStore
             .getAllEntries()
             .then(data => {
-                if(data && data.length > 0) {
+                if (data && data.length > 0) {
                     entryList = sortEntryByDate(data);
-        
+
                     uiBuilder.buildEntryListElem(entryList);
-                    
+
                     Page.showEntryList();
-                }else {
+                } else {
                     Page.showLanding();
                 }
             });
@@ -368,4 +449,3 @@ const QRScanner = ({
 
     init();
 })();
-
