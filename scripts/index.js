@@ -1,15 +1,15 @@
 /*** Features detection ***/
-async function registerSW() {
-    if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.register('../sw.js');
-        } catch (e) {
-            alert('ServiceWorker registration failed. Sorry about that.');
-        }
-    } else {
-        document.querySelector('.alert').removeAttribute('hidden');
-    }
-}
+// async function registerSW() {
+//     if ('serviceWorker' in navigator) {
+//         try {
+//             await navigator.serviceWorker.register('../sw.js');
+//         } catch (e) {
+//             alert('ServiceWorker registration failed. Sorry about that.');
+//         }
+//     } else {
+//         document.querySelector('.alert').removeAttribute('hidden');
+//     }
+// }
 
 const IsBrowserSupport = {
     WebWorker: typeof (Worker) !== "undefined"
@@ -42,6 +42,9 @@ const formatDate = (value) => {
     return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` +
         `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
+
+const $elem = (id) => document.getElementById(id);
+
 /*** End Util function ***/
 
 /*** CSS class Util ***/
@@ -50,13 +53,7 @@ const CssClass = {
     addClass: (elem, className) => elem.classList.add(className),
     removeClass: (elem, className) => elem.classList.remove(className),
     hasClass: (elem, className) => elem.classList.contains(className),
-    toggleClass: (elem, className) => {
-        if (CssClass.hasClass(elem, className)) {
-            CssClass.removeClass(elem, className);
-        } else {
-            CssClass.addClass(elem, className);
-        }
-    }
+    toggleClass: (elem, className) => elem.classList.toggle(className),
 };
 
 /*** End CSS class Util ***/
@@ -64,7 +61,7 @@ const CssClass = {
 const EntryStore = (listKey) => {
     const save = (entries) => {
         localforage.setItem(listKey, entries)
-            .then(value => console.log(value))
+            //.then(value => console.log(value))
             .catch(function (err) {
                 console.error(err);
             });
@@ -80,108 +77,70 @@ const EntryStore = (listKey) => {
     };
 };
 
-/*** Building entry list ***/
+/*** Veact ***/
 
-const UIBuilder = ({
-    entryListElem,
-    handleVisitClick,
-    handleDelete,
-    showEditOverlay
-}) => {
+const MenuIcon = () => 
+        `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-dots-vertical" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z"/>
+            <circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /><circle cx="12" cy="5" r="1" />
+        </svg>`;
 
-    const bindListEvents = (list) => {
-        const buttons = list.querySelectorAll('.btn-visit');
-        buttons.forEach(button => button.addEventListener('click', handleVisitClick));
-    };
+const MenuButton = () => `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">${MenuIcon()}</a>`;
 
-    const bindDeleteEvent = (list) => {
-        const ddDelete = list.querySelectorAll('#dropdown-row__delete');
-        ddDelete.forEach(row => row.addEventListener('click', handleDelete))
-    }
+const VisitButton = ({url, key}) => `<a class="btn btn-secondary js-visitLink" href="${url}" data-key="${key}" target="_blank">Visit</a>`;
 
-    const bindShowOverlayEvent = (list) => {
-        const ddEdit = list.querySelectorAll('#dropdown-row__edit');
-        ddEdit.forEach(row => row.addEventListener('click', showEditOverlay))
-    }
+const MenuDropdown = (key) => {
+    return `<div class="entry-list-dropdown" data-key="${key}">` +
+                `<a href="javascript:void(0)" class="dropdown-row js-editEntry">Edit</a>` +
+                `<a href="javascript:void(0)" class="dropdown-row js-deleteEntry">Delete</a>` +
+            `</div>`;
+}
 
-    let opened = null;
-    const toggleVisibility = e => e.classList.toggle('show');
+const EntryItemTitle = (tenantName) => `<span class="entry-title">${tenantName}</span>`;
 
-    const handleDropdown = e => {
-        const clickedItem = e.parentElement.querySelector('.entry-list-dropdown');
-        toggleVisibility(clickedItem);
+const EntryItemVisitDateTime = (lastVisitDate) => `<span class="entry-date d-block">Last visit: ${formatDate(lastVisitDate)}</span>`;
 
-        if (!opened) {
-            opened = clickedItem;
-        } else if (opened == clickedItem) {
-            opened = null;
-        } else {
-            toggleVisibility(opened);
-            opened = clickedItem;
-        }
-    };
-
-    const handleToggleClick = e => {
-        if (e.target.parentElement.className.includes('entry-list-menu')) {
-            handleDropdown(e.target.parentElement);
-        } else if (opened) {
-            toggleVisibility(opened);
-            opened = null;
-        }
-    };
-
-    document.addEventListener('click', handleToggleClick);
-
-    const buildEntryListItemElem = entry => {
-        return `<li data-key="${entry.key}">` +
-            `<div class="entry-list-content">` +
-            `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">` +
-            `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNgGAVUBEcZGBj+Q/FhYjUxkmDBf3L0MpFgAVmAFAuOILGJDqJRQFUwmkwJgtFkOvBgNJkSBKPJlDYAAMoeEjdsTPIRAAAAAElFTkSuQmCC"/>` +
-            `</a>` +
-            `<div class="entry-list-dropdown">` +
-            `<div class="dropdown-row" id="dropdown-row__edit" data-key="${entry.key}">Edit</div>` +
-            `<div class="dropdown-row" id="dropdown-row__delete" data-key="${entry.key}">Delete</div>` +
-            `</div>` +
-            `<div>` +
-            `<span class="entry-title">${entry.tenant}</span>` +
-            `<div><span class="entry-date">Last visit: ${formatDate(entry.lastVisitDate)}</span></div>` +
-            `</div>` +
-            `</div>` +
-            `<a class="btn btn-secondary btn-visit" href="${entry.url}" data-key="${entry.key}" target="_blank">Visit</a>` +
+const EntryListItem = (entry) => {
+    return `<li data-key="${entry.key}" class="entry-list-item">` +
+                `<div class="entry-list-content">` +
+                    `${MenuButton()}` +
+                    `${MenuDropdown(entry.key)}` +
+                    `<div>` +
+                        `${EntryItemTitle(entry.tenant)}` +
+                        `${EntryItemVisitDateTime(entry.lastVisitDate)}` +
+                    `</div>` +
+                `</div>` +
+                `${VisitButton({ url: entry.url, key: entry.key })}` +
             `</li>`;
-    };
-
-    const buildEntryListElem = entries => {
-        let list = ``;
-        if (entries.length > 0) {
-            entries.forEach(entry => {
-                list += buildEntryListItemElem(entry);
-            });
-            entryListElem.innerHTML = list;
-            bindListEvents(entryListElem);
-            bindDeleteEvent(entryListElem);
-            bindShowOverlayEvent(entryListElem);
-        } else {
-            entryListElem.innerHTML = '<li>No result found.</li>';
-        }
-    };
-
-
-    const moveEntryToTop = (key) => {
-        const entryElem = entryListElem.querySelector(`[data-key="${key}"]`);
-        entryListElem.prepend(entryElem);
-
-        CssClass.addClass(entryElem, 'highlight');
-        setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
-    };
-
-    return {
-        buildEntryListElem,
-        moveEntryToTop
-    }
+};
+    
+const EntryList = ({ entries }) => {
+    return entries.length === 0 ? 
+            '<li class="entry-list-item">No result found.</li>'
+            :
+            `${entries.map(EntryListItem).join('')}`;
 };
 
-/*** End Building entry list ***/
+let Veact = function (options) {
+    this.elem = document.querySelector(options.selector);
+    this.state = options.state;
+    this.template = options.template;
+};
+
+Veact.prototype.render = function () {
+    this.elem.innerHTML = this.template(this.state);
+};
+
+Veact.prototype.setState = function (props) {
+    for (let key in props) {
+        if (props.hasOwnProperty(key)) {
+            this.state[key] = props[key];
+        }
+    }
+    this.render();
+};
+
+/*** End Veact ***/
 
 const QRScanner = ({
     video,
@@ -253,58 +212,72 @@ const QRScanner = ({
         LANDING: 'landing',
         LIST: 'list',
         SCAN: 'scan',
-        ABOUT: 'about'
+        ABOUT: 'about',
+        OVERLAY: 'overlay'
     };
 
     const LIST_KEY = 'entries-list';
     const entryStore = EntryStore(LIST_KEY);
 
-    let entryList = [];
-
     let timeoutId = null;
-    let currentEdit = null;
+    let originEntries = [];
+    let isEdit = false;
 
-    const app = document.getElementById('app');
-    const qrScannerContainer = document.getElementById('qrScannerContainer');
-    const entryListElem = document.getElementById('entryList');
-    const btnQrScan = document.getElementById('btnQrScan');
-    const txtSearchBox = document.getElementById('txtSearchBox');
-    const qrVideo = document.getElementById('qrVideo');
-    const btnScan = document.getElementById('btnScan');
-    const btnCancelScan = document.getElementById('btnCancelScan');
-    const overlayContainer = document.getElementById('overlay');
-    const btnSave = document.getElementById('btnSave');
-    const btnMenu = document.getElementById('btnMenu');
-    const btnCloseMenu = document.getElementById('btnCloseMenu');
-    const txtTenantName = document.getElementById('txtTenantName');
-    const canvasElem = document.getElementById('canvas');
+    const app = $elem('app');
+    const btnQrScan = $elem('btnQrScan');
+    const txtSearchBox = $elem('txtSearchBox');
+    const qrVideo = $elem('qrVideo');
+    const btnScan = $elem('btnScan');
+    const btnCancelScan = $elem('btnCancelScan');
+    const btnSave = $elem('btnSave');
+    const btnMenu = $elem('btnMenu');
+    const btnCloseMenu = $elem('btnCloseMenu');
+    const txtTenantName = $elem('txtTenantName');
+    const canvasElem = $elem('canvas');
 
     const updateVisitEntry = (key) => {
-        let entry = entryList.find(entry => entry.key === key);
+        const { entries } = entryList.state;
+        let entry = entries.find(entry => entry.key === key);
         entry.lastVisitDate = new Date();
         entry.visits += 1;
 
-        const sortedList = sortEntryByDate(entryList);
+        const sortedList = sortEntryByDate(entries);
 
         entryStore.save(sortedList);
-        uiBuilder.buildEntryListElem(sortedList);
+        
+        entryList.setState({
+            entries: sortedList
+        });
     };
 
-    const uiBuilder = UIBuilder({
-        entryListElem,
-        handleVisitClick: (e) => {
-            updateVisitEntry(e.target.dataset.key);
-        },
-        handleDelete: (e) => {
-            handleDeleteEntry(e.target.dataset.key)
-        },
-        showEditOverlay: (e) => {
-            CssClass.removeClass(overlayContainer, 'hide');
-            const selected = entryList.find(entry => entry.key === e.target.dataset.key);
-            txtTenantName.value = selected.tenant;
-            currentEdit = selected.key;
-            txtTenantName.focus();
+    const deleteVisitEntry = (key) => {
+        const { entries } = entryList.state;
+        const newEntries = entries.filter(entry => entry.key !== key);
+        entryStore.save(newEntries);
+
+        if(newEntries.length === 0) {
+            Page.render(PageUrl.LANDING);
+        }else {
+            entryList.setState({
+                entries: newEntries
+            });
         }
+    }
+
+    const moveEntryToTop = (key) => {
+        const entryElem = entry.elem.querySelector(`[data-key="${key}"]`);
+        entryListElem.prepend(entryElem);
+
+        CssClass.addClass(entryElem, 'highlight');
+        setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
+    };
+
+    const entryList = new Veact({
+        selector: '#entryList',
+        state: {
+            entries: []
+        },
+        template: (props) => EntryList(props)
     });
 
     const Page = {
@@ -312,39 +285,41 @@ const QRScanner = ({
             app.dataset.page = url
         },
         showFormOverlay: (url) => {
+            if(url.hostname.indexOf('ndi-api.gov.sg') === -1) {
+                Page.render(PageUrl.LIST);
+                alert('Sorry, QR code not supported.');
+                return;
+            }
+
             const tenantKey = url.pathname.split('/')[2];
-            const isExist = entryList.some(entry => entry.key === tenantKey);
+            const { entries } = entryList.state;
+            const isExist = entries.some(entry => entry.key === tenantKey);
 
             if (!isExist) {
                 txtTenantName.value = getTenantName(tenantKey);
                 txtTenantName.setAttribute('data-key', tenantKey);
                 txtTenantName.setAttribute('data-url', url);
 
-                CssClass.addClass(qrScannerContainer, 'hide');
-                CssClass.removeClass(overlayContainer, 'hide');
+                Page.render(PageUrl.OVERLAY);
 
                 txtTenantName.focus();
             } else {
-                uiBuilder.moveEntryToTop(tenantKey);
+                moveEntryToTop(tenantKey);
                 Page.render(PageUrl.LIST);
             }
         },
-        showAbout: () => {
-            app.dataset.page = PageUrl.ABOUT;
-        },
-        closeAbout: () => {
-            app.dataset.page =
-                entryList.length === 0 ?
-                PageUrl.LANDING :
-                PageUrl.LIST;
+        showEditOverlay: (tenantKey) => {
+            const { entries } = entryList.state;
+            const selected = entries.find(entry => entry.key === tenantKey);
+            txtTenantName.value = selected.tenant;
+            txtTenantName.setAttribute('data-key', tenantKey);
+
+            Page.render(PageUrl.OVERLAY);
+
+            isEdit = true;
+            txtTenantName.focus();
         }
     };
-
-    const handleDeleteEntry = (key) => {
-        const removed = entryList.filter(entry => entry.key !== key)
-        entryStore.save(removed);
-        uiBuilder.buildEntryListElem(removed);
-    }
 
     const qrScanner = QRScanner({
         video: qrVideo,
@@ -353,7 +328,6 @@ const QRScanner = ({
     });
 
     const startStream = () => {
-        // Use facingMode: environment to attemt to get the front camera on phones
         navigator
             .mediaDevices
             .getUserMedia({
@@ -372,7 +346,8 @@ const QRScanner = ({
 
         const handleCancleClick = () => {
             qrScanner.stopScan();
-            if (entryList.length === 0) {
+            const { entries } = entryList.state;
+            if (entries.length === 0) {
                 Page.render(PageUrl.LANDING);
             } else {
                 Page.render(PageUrl.LIST);
@@ -382,21 +357,41 @@ const QRScanner = ({
         const handleSearchKeyup = (e) => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-                const filteredList = searchTenant(entryList, e.target.value);
-                uiBuilder.buildEntryListElem(filteredList);
+                if(e.target.value.trim() === '' && originEntries.length === 0) return;
+                if(e.target.value === '') {
+                    entryList.setState({
+                        entries: originEntries
+                    }); 
+                    originEntries = [];
+                }else {
+                    let { entries } = entryList.state;
+                    if(originEntries.length === 0) {
+                        originEntries = entries;
+                    }
+                    const filteredList = searchTenant(entries, e.target.value);
+                    entryList.setState({
+                        entries: filteredList
+                    }); 
+                }
             }, 300);
         };
 
         const handleUpdate = () => {
-            const updatedList = entryList.map(entry => entry.key === currentEdit ? {
+            const { entries } = entryList.state;
+            const updatedList = entries.map(entry => entry.key === txtTenantName.dataset.key ? {
                 ...entry,
                 tenant: txtTenantName.value
             } : entry);
 
             entryStore.save(updatedList);
-            uiBuilder.buildEntryListElem(updatedList);
-            currentEdit = null;
-            CssClass.addClass(overlayContainer, 'hide');
+            
+            entryList.setState({
+                entries: updatedList
+            });
+
+            isEdit = false;
+
+            Page.render(PageUrl.LIST);
         }
 
         const handleSaveClick = () => {
@@ -405,8 +400,10 @@ const QRScanner = ({
                 txtTenantName.focus();
                 return;
             }
-            if (!currentEdit) {
-                entryList.push({
+            if (!isEdit) {
+                const { entries } = entryList.state;
+
+                entries.push({
                     key: txtTenantName.dataset.key,
                     tenant: txtTenantName.value,
                     url: txtTenantName.dataset.url,
@@ -414,15 +411,74 @@ const QRScanner = ({
                     visits: 1
                 });
 
-                entryStore.save(entryList);
+                entryStore.save(entries);
 
-                uiBuilder.buildEntryListElem(sortEntryByDate(entryList));
+                entryList.setState({
+                    entries: sortEntryByDate(entries)
+                });
 
                 Page.render(PageUrl.LIST);
             } else {
                 handleUpdate();
             }
         };
+
+        let opened = null;
+        const handleDropdown = e => {
+            const clickedItem = e.parentElement.querySelector('.entry-list-dropdown');
+            CssClass.toggleClass(clickedItem, 'd-block');
+
+            if (!opened) {
+                opened = clickedItem;
+            } else if (opened == clickedItem) {
+                opened = null;
+            } else {
+                CssClass.toggleClass(opened, 'd-block');
+                opened = clickedItem;
+            }
+        };
+
+        const handleToggleMenu = (e) => {
+            if (e.target.matches('.js-listMenu')) {
+                handleDropdown(e.target.parentElement);
+                return;
+            } else if (opened) {
+                CssClass.toggleClass(opened, 'd-block');
+                opened = null;
+            }
+        };
+
+        const handleDeleteEntry = (e) => {
+            if (e.target.matches('.js-deleteEntry')) {
+                deleteVisitEntry(e.target.parentElement.dataset.key);
+                return;
+            }
+        };
+
+        const handleEditEntry = (e) => {
+            const btnEdit = e.target;
+            if (btnEdit.matches('.js-editEntry')) {
+                Page.showEditOverlay(e.target.parentElement.dataset.key);
+                return;
+            }
+        };
+
+        const handleVisitClick = (e) => {
+            const visitLink = e.target;
+            if (visitLink.matches('.js-visitLink')) {
+                updateVisitEntry(visitLink.dataset.key);
+                return;
+            }
+        };
+
+        const handleGlobalClick = e => {
+            handleToggleMenu(e);
+            handleDeleteEntry(e);
+            handleEditEntry(e);
+            handleVisitClick(e);  
+        };
+    
+        document.addEventListener('click', handleGlobalClick);
 
         btnScan.addEventListener('click', handleScanClick);
 
@@ -439,7 +495,8 @@ const QRScanner = ({
         });
 
         btnCloseMenu.addEventListener('click', () => {
-            if (entryList.length === 0) {
+            const { entries } = entryList.state;
+            if (entries.length === 0) {
                 Page.render(PageUrl.LANDING);
             } else {
                 Page.render(PageUrl.LIST);
@@ -454,9 +511,9 @@ const QRScanner = ({
             .getAllEntries()
             .then(data => {
                 if (data && data.length > 0) {
-                    entryList = sortEntryByDate(data);
-
-                    uiBuilder.buildEntryListElem(entryList);
+                    entryList.setState({
+                        entries: sortEntryByDate(data)
+                    });
 
                     Page.render(PageUrl.LIST);
                 } else {
@@ -465,11 +522,9 @@ const QRScanner = ({
             });
 
         CssClass.removeClass(app, 'loading');
-
-        window.addEventListener('load', () => {
-            registerSW();
-        });
     };
-
-    init();
+    window.addEventListener('load', () => {
+        //registerSW();
+        init();
+    });
 })();
