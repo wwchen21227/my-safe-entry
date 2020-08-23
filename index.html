@@ -24,12 +24,21 @@
     <div id="app" class="app-container loading">
         <header class="header">
             <a id="btnMenu" href="javascript:void(0)" class="btn-menu hide-in-scan hide-in-about">
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAKElEQVRIiWNgGAXDHjAisf/TwmwmKhs6CgYhGE1Fo4ByMJqKRsEQAADWCQMKYvEFtQAAAABJRU5ErkJggg=="/>
+                <svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">   
+                    <path d="M 12 2 C 6.4889971 2 2 6.4889971 2 12 C 2 17.511003 6.4889971 22 12 22 C 17.511003 22 22 17.511003 22 12 C 22 6.4889971 17.511003 2 12 2 z M 12 4 C 16.430123 4 20 7.5698774 20 12 C 20 16.430123 16.430123 20 12 20 C 7.5698774 20 4 16.430123 4 12 C 4 7.5698774 7.5698774 4 12 4 z M 11 7 L 11 9 L 13 9 L 13 7 L 11 7 z M 11 11 L 11 17 L 13 17 L 13 11 L 11 11 z"/>
+                </svg>
             </a>
             <a href="#">MySafe<b>Entry</b></a>
             <a id="btnQrScan" href="javascript:void(0)" 
                 class="btn-qr-Scan show-in-list">
-                <img src="images/qr-scan.png"/>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z"/>
+                    <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                    <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                    <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                    <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
             </a>
         </header>
 
@@ -42,9 +51,9 @@
                     Click <b>Scan To Save</b> button to bookmark your SafeEntry.
                 </p>
             </div>
-            <img class="qr-image" src="./images/qrcode.png"/>
+            <img class="qr-image" src="./images/qrcode.png" alt="QR code"/>
             <div class="btn-holder align-center">
-                <button id="btnScan" class="btn-primary">Scan to save</button>
+                <button id="btnScan" class="btn btn-primary w-100-pc">Scan to save</button>
             </div>
         </div>
 
@@ -56,6 +65,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="search-icon">
                     <path d="M23.822 20.88l-6.353-6.354c.93-1.465 1.467-3.2 1.467-5.059.001-5.219-4.247-9.467-9.468-9.467s-9.468 4.248-9.468 9.468c0 5.221 4.247 9.469 9.468 9.469 1.768 0 3.421-.487 4.839-1.333l6.396 6.396 3.119-3.12zm-20.294-11.412c0-3.273 2.665-5.938 5.939-5.938 3.275 0 5.94 2.664 5.94 5.938 0 3.275-2.665 5.939-5.94 5.939-3.274 0-5.939-2.664-5.939-5.939z"/>
                 </svg>
+                <svg class="search-clear-icon js-clearSearch" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </div>
             <ul id="entryList" class="entry-list"></ul>
         </div>
@@ -68,7 +78,7 @@
             <span id="debug"></span>
             <span id="error"></span>
             <div class="btn-holder align-center">
-                <button id="btnCancelScan" class="btn-primary">Cancel</button>
+                <button id="btnCancelScan" class="btn btn-primary w-100-pc">Cancel</button>
             </div>
         </div>
 
@@ -89,26 +99,27 @@
                 If you like this service, please don't hesitate to share it with your relatives and friends. :)
                 <br/><br/>
                 <a href="https://www.facebook.com/sharer/sharer.php?u=https://myse.live&display=popup" target="_blank">
-                    <img class="v-align-middle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAAAzUlEQVRIie2Wuw3CMBBAnyOE6NJQsABz0BKxGUNkCiq2oKMmKVkAIREqpHMU4w/nIsJPuiLR3T2fnFiGwj9yAHpgUIoOaELEnaL0E7exxEyIh5DVJWC5qkwSL1riE7AD1sAK2ADX2Cax+3dmeoDLKM9CY+Ij8FLoEz1xLWpb4OnIs9D4qitR8wCWjjzjfEgUyx7falV+JyPC9f4e2zRkX33UvppcB8jWl7BIbCwnCN1ji9kfmUVcxEHiPoOnC0lqiLt3SVz3rf3vay/MjTdlPnnc9YAe7gAAAABJRU5ErkJggg=="/> 
+                    <svg class="v-align-middle" fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">    <path d="M17,3H7C4.791,3,3,4.791,3,7v10c0,2.209,1.791,4,4,4h5.621v-6.961h-2.343v-2.725h2.343V9.309 c0-2.324,1.421-3.591,3.495-3.591c0.699-0.002,1.397,0.034,2.092,0.105v2.43h-1.428c-1.13,0-1.35,0.534-1.35,1.322v1.735h2.7 l-0.351,2.725h-2.365V21H17c2.209,0,4-1.791,4-4V7C21,4.791,19.209,3,17,3z"/></svg>
                     <span class="v-align-middle">facebook</span>
                 </a>
             </p>
             <div class=" align-center" style="margin-top:25px">
-                <button id="btnCloseMenu" class="btn-primary">Close</button>
+                <button id="btnCloseMenu" class="btn btn-primary">Close</button>
             </div>
         </div>
 
-        <div id="overlay" class="overlay-container hide">
+        <div id="overlay" class="overlay-container page" data-page-url="overlay">
             <div class="form-container js-form">
-                <form>
-                    <label class="align-center">Give an easy to search and remember name</label>
+                <form >
+                    <label class="align-center">Give an easy to remember name</label>
                     <input id="txtTenantName" type="text" placeholder="Place name" class="textbox"/>
                     <div class="btn-holder align-center">
-                        <button id="btnSave" class="btn-primary">Save</button>
+                        <button type="button" id="btnSave" class="btn btn-primary w-100-pc">Save</button>
                     </div>
                 </form>
             </div>
         </div>
+        
         <div class="sk-folding-cube">
             <div class="sk-cube1 sk-cube"></div>
             <div class="sk-cube2 sk-cube"></div>

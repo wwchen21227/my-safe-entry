@@ -1,4 +1,4 @@
-const cacheName = 'myse-v1.3';
+const cacheName = 'myse-v1.3.0';
 const staticAssets = [
     './',
     './index.html',
@@ -16,6 +16,8 @@ self.addEventListener('activate', (event) => {
                     return caches.delete(key);
                 }
             }));
+        }).then(function () {
+            return self.clients.claim();
         })
     );
 });
