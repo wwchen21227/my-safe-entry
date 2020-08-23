@@ -1,7 +1,7 @@
 {
     "name":"MySafeEntry",
     "short_name":"mySE",
-    "start_url": ".",
+    "start_url": "https://myse.live",
     "icons":[
        {
           "src":"./android-chrome-192x192.png",
