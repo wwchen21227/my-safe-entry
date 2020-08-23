@@ -1,6 +1,12 @@
 /*** Features detection ***/
+
+const IsBrowserSupport = {
+    WebWorker: typeof (Worker) !== "undefined",
+    ServiceWorker: 'serviceWorker' in navigator
+}
+
 async function registerSW() {
-    if ('serviceWorker' in navigator) {
+    if (IsBrowserSupport.ServiceWorker) {
         try {
             await navigator.serviceWorker.register('../sw.js');
         } catch (e) {
@@ -9,10 +15,6 @@ async function registerSW() {
     } else {
         document.querySelector('.alert').removeAttribute('hidden');
     }
-}
-
-const IsBrowserSupport = {
-    WebWorker: typeof (Worker) !== "undefined"
 }
 
 /*** End of feature detection ***/
@@ -456,8 +458,11 @@ const QRScanner = ({
         };
 
         const handleDeleteEntry = (e) => {
-            if (e.target.matches('.js-deleteEntry')) {
-                deleteVisitEntry(e.target.parentElement.dataset.key);
+            const btnDelete = e.target;
+            if (btnDelete.matches('.js-deleteEntry')) {
+                if(confirm('Delete entry?' )) {
+                    deleteVisitEntry(btnDelete.parentElement.dataset.key);
+                }
                 return;
             }
         };
