@@ -392,6 +392,10 @@ body {
   width: 100%;
 }
 
+.mt-1{
+  margin-top: 0.5rem;
+}
+
 body {
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
     font-size: 16px;
@@ -499,6 +503,7 @@ header svg {
 .btn-secondary {
   background-color: var(--green-bg-color);
   border-radius: 5px;
+  padding: 8px 16px;
 }
 
 .qr-video {
@@ -529,7 +534,7 @@ header svg {
 }
 
 .entry-list-menu {
-  margin-left: -5px;
+  margin-left: -4px;
 }
 
 .entry-list-menu > svg {
@@ -551,9 +556,9 @@ header svg {
 
 .dropdown-row {
   padding: 10px 15px;
-  font-size: 12px;
+  font-size: 0.8rem;
   display: block;
-  color: var(--primary-text-color);
+  color: var(--dimmer-text-color);
 }
 
 .dropdown-row:first-child{
@@ -561,10 +566,10 @@ header svg {
 } 
 
 .entry-title {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--red-bg-color);
   letter-spacing: 0.25px;
-  font-size: 0.92rem;
+  font-size: 1rem;
   word-break: break-all;
 }
 
@@ -598,14 +603,14 @@ header svg {
 .search-icon,
 .search-clear-icon  {
   position: absolute;
-  top: 10px;
+  top: 12px;
   opacity: 0.4;
+  transition: all 0.3s;
 }
 
 .search-icon {
   left: 15px;
   width: 18px;
-  transition: all 0.3s;
 }
 
 .search-clear-icon {
@@ -615,7 +620,7 @@ header svg {
 
 .search-box {
   width: 100%;
-  padding: 0 0.5rem 0.6rem 1.5rem;
+  padding: 0.3rem 0.5rem 0.6rem 1.5rem;
   border: 0;
   border-bottom: 1px solid #ddd;
   outline: none;

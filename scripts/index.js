@@ -5,17 +5,17 @@ const IsBrowserSupport = {
     ServiceWorker: 'serviceWorker' in navigator
 }
 
-async function registerSW() {
-    if (IsBrowserSupport.ServiceWorker) {
-        try {
-            await navigator.serviceWorker.register('../sw.js');
-        } catch (e) {
-            alert('ServiceWorker registration failed. Sorry about that.');
-        }
-    } else {
-        document.querySelector('.alert').removeAttribute('hidden');
-    }
-}
+// async function registerSW() {
+//     if (IsBrowserSupport.ServiceWorker) {
+//         try {
+//             await navigator.serviceWorker.register('../sw.js');
+//         } catch (e) {
+//             alert('ServiceWorker registration failed. Sorry about that.');
+//         }
+//     } else {
+//         document.querySelector('.alert').removeAttribute('hidden');
+//     }
+// }
 
 /*** End of feature detection ***/
 
@@ -24,12 +24,14 @@ const sortEntryByDate = (arr) => arr.sort((a, b) => b.lastVisitDate - a.lastVisi
 
 const isNumber = (value) => !isNaN(value);
 
+const capitaliseText = (value) => `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}`;
+
 const getTenantName = key => {
     const arr = key.split('-');
     const startIndex = isNumber(arr[2]) ? 3 : 2;
-    let tenantName = arr[startIndex];
+    let tenantName = capitaliseText(arr[startIndex]);
     for (let i = (startIndex + 1); i < arr.length - 1; i++) {
-        tenantName += ' ' + arr[i];
+        tenantName += ' ' + capitaliseText(arr[i]);
     }
     return tenantName;
 };
@@ -219,11 +221,13 @@ const QRScanner = ({
     };
 
     const LIST_KEY = 'entries-list';
+    const PATH_PRODUCT_KEY_INDEX = 2;
     const entryStore = EntryStore(LIST_KEY);
-
+    
     let timeoutId = null;
     let originEntries = [];
     let isEdit = false;
+    
 
     const app = $elem('#app');
     const btnQrScan = $elem('#btnQrScan');
@@ -280,14 +284,22 @@ const QRScanner = ({
             app.dataset.page = url
         },
         showFormOverlay: (url) => {
-            if(url.hostname.indexOf('ndi-api.gov.sg') === -1) {
-                Page.render(PageUrl.LIST);
+            const pathArr = url.pathname.split('/');
+            const { entries } = entryList.state;
+
+            console.log(url.hostname.indexOf('gov.sg'), pathArr.length)
+            if(url.hostname.indexOf('gov.sg') === -1 || 
+               pathArr.length < 2) {
+                if(entries.length === 0) {
+                    Page.render(PageUrl.SCAN);    
+                }else {
+                    Page.render(PageUrl.LIST);
+                }
                 alert('Sorry, QR code not supported.');
                 return;
             }
 
-            const tenantKey = url.pathname.split('/')[2];
-            const { entries } = entryList.state;
+            const tenantKey = pathArr[PATH_PRODUCT_KEY_INDEX];
             const isExist = entries.some(entry => entry.key === tenantKey);
 
             if (!isExist) {
@@ -375,6 +387,8 @@ const QRScanner = ({
                     let { entries } = entryList.state;
                     if(originEntries.length === 0) {
                         originEntries = entries;
+                    }else {
+                        entries = originEntries;
                     }
                     const filteredList = searchTenant(entries, e.target.value);
                     entryList.setState({
@@ -387,10 +401,12 @@ const QRScanner = ({
 
         const handleUpdate = () => {
             const { entries } = entryList.state;
-            const updatedList = entries.map(entry => entry.key === txtTenantName.dataset.key ? {
-                ...entry,
-                tenant: txtTenantName.value
-            } : entry);
+            const updatedList = entries
+                                .map(entry => entry.key === txtTenantName.dataset.key ? 
+                {
+                    ...entry,
+                    tenant: txtTenantName.value
+                } : entry);
 
             entryStore.save(updatedList);
             
@@ -399,7 +415,6 @@ const QRScanner = ({
             });
 
             isEdit = false;
-
             Page.render(PageUrl.LIST);
         }
 
@@ -426,7 +441,8 @@ const QRScanner = ({
                     entries: sortEntryByDate(entries)
                 });
 
-                Page.render(PageUrl.LIST);
+                //Page.render(PageUrl.LIST);
+                window.location.href = txtTenantName.dataset.url;
             } else {
                 handleUpdate();
             }
@@ -541,7 +557,7 @@ const QRScanner = ({
         CssClass.removeClass(app, 'loading');
     };
     window.addEventListener('load', () => {
-        registerSW();
+        //registerSW();
         init();
     });
 })();
