@@ -43,7 +43,7 @@ const formatDate = (value) => {
         `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
 
-const $elem = (id) => document.getElementById(id);
+const $elem = (selector) => document.querySelector(selector);
 
 /*** End Util function ***/
 
@@ -116,7 +116,7 @@ const EntryListItem = (entry) => {
     
 const EntryList = ({ entries }) => {
     return entries.length === 0 ? 
-            '<li class="entry-list-item">No result found.</li>'
+            '<li class="entry-list-item no-result">No result found.</li>'
             :
             `${entries.map(EntryListItem).join('')}`;
 };
@@ -223,17 +223,18 @@ const QRScanner = ({
     let originEntries = [];
     let isEdit = false;
 
-    const app = $elem('app');
-    const btnQrScan = $elem('btnQrScan');
-    const txtSearchBox = $elem('txtSearchBox');
-    const qrVideo = $elem('qrVideo');
-    const btnScan = $elem('btnScan');
-    const btnCancelScan = $elem('btnCancelScan');
-    const btnSave = $elem('btnSave');
-    const btnMenu = $elem('btnMenu');
-    const btnCloseMenu = $elem('btnCloseMenu');
-    const txtTenantName = $elem('txtTenantName');
-    const canvasElem = $elem('canvas');
+    const app = $elem('#app');
+    const btnQrScan = $elem('#btnQrScan');
+    const txtSearchBox = $elem('#txtSearchBox');
+    const qrVideo = $elem('#qrVideo');
+    const btnScan = $elem('#btnScan');
+    const btnCancelScan = $elem('#btnCancelScan');
+    const btnSave = $elem('#btnSave');
+    const btnMenu = $elem('#btnMenu');
+    const btnCloseMenu = $elem('#btnCloseMenu');
+    const txtTenantName = $elem('#txtTenantName');
+    const canvasElem = $elem('#canvas');
+    const btnClearSearch = $elem('.js-clearSearch');
 
     const updateVisitEntry = (key) => {
         const { entries } = entryList.state;
@@ -263,14 +264,6 @@ const QRScanner = ({
             });
         }
     }
-
-    const moveEntryToTop = (key) => {
-        const entryElem = entry.elem.querySelector(`[data-key="${key}"]`);
-        entryListElem.prepend(entryElem);
-
-        CssClass.addClass(entryElem, 'highlight');
-        setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
-    };
 
     const entryList = new Veact({
         selector: '#entryList',
@@ -327,6 +320,14 @@ const QRScanner = ({
         page: Page
     });
 
+    const moveEntryToTop = (key) => {
+        const entryElem = entryList.elem.querySelector(`[data-key="${key}"]`);
+        entryList.elem.prepend(entryElem);
+
+        CssClass.addClass(entryElem, 'highlight');
+        setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
+    };
+
     const startStream = () => {
         navigator
             .mediaDevices
@@ -337,6 +338,14 @@ const QRScanner = ({
             })
             .then((stream) => qrScanner.startScan(stream, () => Page.render(PageUrl.SCAN)))
             .catch(err => console.error(err.name + ": " + err.message));
+    };
+
+    const resetSearch = () => {
+        entryList.setState({
+            entries: originEntries
+        }); 
+        originEntries = [];
+        CssClass.removeClass(btnClearSearch, 'visible');
     };
 
     const bindEvents = () => {
@@ -359,10 +368,7 @@ const QRScanner = ({
             timeoutId = setTimeout(() => {
                 if(e.target.value.trim() === '' && originEntries.length === 0) return;
                 if(e.target.value === '') {
-                    entryList.setState({
-                        entries: originEntries
-                    }); 
-                    originEntries = [];
+                    resetSearch();
                 }else {
                     let { entries } = entryList.state;
                     if(originEntries.length === 0) {
@@ -372,6 +378,7 @@ const QRScanner = ({
                     entryList.setState({
                         entries: filteredList
                     }); 
+                    CssClass.addClass(btnClearSearch, 'visible');
                 }
             }, 300);
         };
@@ -489,6 +496,11 @@ const QRScanner = ({
         txtSearchBox.addEventListener('keyup', handleSearchKeyup);
 
         btnSave.addEventListener('click', handleSaveClick);
+        
+        btnClearSearch.addEventListener('click', () => {
+            txtSearchBox.value = '';
+            resetSearch();
+        });
 
         btnMenu.addEventListener('click', () => {
             Page.render(PageUrl.ABOUT);

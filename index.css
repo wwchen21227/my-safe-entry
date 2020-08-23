@@ -384,6 +384,10 @@ body {
   visibility: hidden;
 }
 
+.visible {
+  visibility: visible !important;
+}
+
 .w-100-pc{
   width: 100%;
 }
@@ -591,13 +595,22 @@ header svg {
   top: 0;
 }
 
-.search-icon {
+.search-icon,
+.search-clear-icon  {
   position: absolute;
-  left: 15px;
   top: 10px;
-  width: 18px;
   opacity: 0.4;
+}
+
+.search-icon {
+  left: 15px;
+  width: 18px;
   transition: all 0.3s;
+}
+
+.search-clear-icon {
+  right: 15px;
+  visibility: hidden;
 }
 
 .search-box {
@@ -619,9 +632,10 @@ header svg {
   transition: opacity 0.3s;
 }
 
-.search-box:focus ~ .search-icon {
+.search-box:focus ~ svg{
   opacity: 0.8;
   fill: var(--red-bg-color);
+  color: var(--red-bg-color);
 }
 
 .search-box:focus::placeholder {
@@ -808,4 +822,8 @@ label {
 
 .loading .sk-folding-cube{
   display: block;
+}
+
+.no-result{
+  color: var(--dimmer-text-color);
 }
