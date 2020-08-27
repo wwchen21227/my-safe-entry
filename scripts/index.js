@@ -2,22 +2,49 @@
 
 const IsBrowserSupport = {
     WebWorker: typeof (Worker) !== "undefined",
-    ServiceWorker: 'serviceWorker' in navigator
+    ServiceWorker: 'serviceWorker' in navigator,
+    SpeechRecognition: 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
+};
+
+async function registerSW() {
+    if (IsBrowserSupport.ServiceWorker) {
+        try {
+            await navigator.serviceWorker.register('../sw.js');
+        } catch (e) {
+            alert('ServiceWorker registration failed. Sorry about that.');
+        }
+    } else {
+        document.querySelector('.alert').removeAttribute('hidden');
+    }
 }
 
-// async function registerSW() {
-//     if (IsBrowserSupport.ServiceWorker) {
-//         try {
-//             await navigator.serviceWorker.register('../sw.js');
-//         } catch (e) {
-//             alert('ServiceWorker registration failed. Sorry about that.');
-//         }
-//     } else {
-//         document.querySelector('.alert').removeAttribute('hidden');
-//     }
-// }
-
 /*** End of feature detection ***/
+
+/*** Speech Recognation ***/
+
+const setupSpeechRecognition = (function(processTranscript) {
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.addEventListener("result", event => {
+        if (typeof event.results === "undefined") return;
+        const transcript = event.results[event.results.length - 1][0].transcript
+            .toLowerCase()
+            .trim()
+
+        processTranscript(transcript);
+
+        recognition.stop();
+    });
+
+    return recognition;
+});
+
+/*** END OF Speech Recognation***/
 
 /*** Util function ***/
 const sortEntryByDate = (arr) => arr.sort((a, b) => b.lastVisitDate - a.lastVisitDate);
@@ -48,6 +75,17 @@ const formatDate = (value) => {
 }
 
 const $elem = (selector) => document.querySelector(selector);
+
+var moveInArray = function (arr, from, to) {
+	if (Object.prototype.toString.call(arr) !== '[object Array]') {
+		throw new Error('Please provide a valid array');
+	}
+	const item = arr.splice(from, 1);
+	if (!item.length) {
+		throw new Error('There is no item in the array at index ' + from);
+	}
+	arr.splice(to, 0, item[0]);
+};
 
 /*** End Util function ***/
 
@@ -89,9 +127,11 @@ const MenuIcon = () =>
             <circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /><circle cx="12" cy="5" r="1" />
         </svg>`;
 
-const MenuButton = () => `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">${MenuIcon()}</a>`;
+const MenuButton = () => 
+    `<a href="javascript:void(0);" class="entry-list-menu js-listMenu">${MenuIcon()}</a>`;
 
-const VisitButton = ({url, key}) => `<a class="btn btn-secondary js-visitLink" href="${url}" data-key="${key}" target="_blank">Visit</a>`;
+const VisitButton = ({url, key}) => 
+    `<a class="btn btn-secondary js-visitLink" href="${url}" data-key="${key}" target="_blank">Visit</a>`;
 
 const MenuDropdown = (key) => {
     return `<div class="entry-list-dropdown" data-key="${key}">` +
@@ -100,9 +140,11 @@ const MenuDropdown = (key) => {
             `</div>`;
 }
 
-const EntryItemTitle = (tenantName) => `<span class="entry-title">${tenantName}</span>`;
+const EntryItemTitle = (tenantName) => 
+    `<span class="entry-title">${tenantName}</span>`;
 
-const EntryItemVisitDateTime = (lastVisitDate) => `<span class="entry-date d-block">Last visit: ${formatDate(lastVisitDate)}</span>`;
+const EntryItemVisitDateTime = (lastVisitDate) => 
+    `<span class="entry-date d-block">Last visit: ${formatDate(lastVisitDate)}</span>`;
 
 const EntryListItem = (entry) => {
     return `<li data-key="${entry.key}" class="entry-list-item">` +
@@ -228,7 +270,6 @@ const QRScanner = ({
     let originEntries = [];
     let isEdit = false;
     
-
     const app = $elem('#app');
     const btnQrScan = $elem('#btnQrScan');
     const txtSearchBox = $elem('#txtSearchBox');
@@ -241,6 +282,7 @@ const QRScanner = ({
     const txtTenantName = $elem('#txtTenantName');
     const canvasElem = $elem('#canvas');
     const btnClearSearch = $elem('.js-clearSearch');
+    const btnSpeech = $elem('.js-speech');
 
     const updateVisitEntry = (key) => {
         const { entries } = entryList.state;
@@ -286,8 +328,6 @@ const QRScanner = ({
         showFormOverlay: (url) => {
             const pathArr = url.pathname.split('/');
             const { entries } = entryList.state;
-
-            console.log(url.hostname.indexOf('gov.sg'), pathArr.length)
             if(url.hostname.indexOf('gov.sg') === -1 || 
                pathArr.length < 2) {
                 if(entries.length === 0) {
@@ -362,6 +402,20 @@ const QRScanner = ({
         CssClass.removeClass(btnClearSearch, 'visible');
     };
 
+    const searchKeyword = (keyword) => {
+        let { entries } = entryList.state;
+        if(originEntries.length === 0) {
+            originEntries = entries;
+        }else {
+            entries = originEntries;
+        }
+        const filteredList = searchTenant(entries, keyword);
+        entryList.setState({
+            entries: filteredList
+        }); 
+        CssClass.addClass(btnClearSearch, 'visible');
+    };
+
     const bindEvents = () => {
         const handleScanClick = () => {
             startStream();
@@ -384,17 +438,7 @@ const QRScanner = ({
                 if(e.target.value === '') {
                     resetSearch();
                 }else {
-                    let { entries } = entryList.state;
-                    if(originEntries.length === 0) {
-                        originEntries = entries;
-                    }else {
-                        entries = originEntries;
-                    }
-                    const filteredList = searchTenant(entries, e.target.value);
-                    entryList.setState({
-                        entries: filteredList
-                    }); 
-                    CssClass.addClass(btnClearSearch, 'visible');
+                    searchKeyword(e.target.value); 
                 }
             }, 300);
         };
@@ -555,9 +599,52 @@ const QRScanner = ({
             });
 
         CssClass.removeClass(app, 'loading');
+
+        if(IsBrowserSupport.SpeechRecognition) {
+            const SPEECH_WAITING_TIME = 10000;
+            let speechTimerId = null;
+            
+            const commands = {
+                "search for": term => (txtSearchBox.value = term)
+            };
+            const recognition = setupSpeechRecognition((transcript) => {
+                for (let command in commands) {
+                    if (transcript.indexOf(command) === 0) {
+                        if (transcript[command.length] === undefined) {
+                            commands[command]();
+                        } else {
+                            const param = transcript
+                                .substring(command.length, transcript.length)
+                                .trim();
+                            commands[command](param);
+                            searchKeyword(param);
+                        }
+                    } else {
+                        txtSearchBox.value = transcript;
+                        searchKeyword(transcript);
+                    }
+                }
+                clearTimeout(speechTimerId);
+                CssClass.removeClass(app, 'speech-activated');
+            });
+
+            btnSpeech.addEventListener('click', () => {
+                recognition.start(); 
+                CssClass.addClass(app, 'speech-activated');
+
+                speechTimerId = setTimeout(() => {
+                    recognition.stop(); 
+                    CssClass.removeClass(app, 'speech-activated');
+                }, SPEECH_WAITING_TIME);
+            });
+
+            CssClass.addClass(btnSpeech, 'visible');
+        }else {
+            CssClass.addClass(app, 'no-speech');
+        }
     };
     window.addEventListener('load', () => {
-        //registerSW();
+        registerSW();
         init();
     });
 })();

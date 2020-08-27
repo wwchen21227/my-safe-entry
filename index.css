@@ -598,34 +598,83 @@ header svg {
   padding: 10px 1rem 5px;
   position: sticky;
   top: 0;
+  margin-top: 5px;
 }
 
 .search-icon,
-.search-clear-icon  {
+.search-clear-icon,
+.search-speech-icon  {
   position: absolute;
-  top: 12px;
+  top: 18px;
   opacity: 0.4;
   transition: all 0.3s;
 }
 
 .search-icon {
-  left: 15px;
+  left: 25px;
   width: 18px;
 }
 
-.search-clear-icon {
-  right: 15px;
+.search-clear-icon{
+  right: 70px;
   visibility: hidden;
 }
 
+.search-speech-icon {
+  top:14px;
+  right: 18px;
+  visibility: hidden;
+  border: 2px solid rgba(0,0,0,0.6);
+  border-radius: 50%;
+  padding: 5px;
+  height: 32px;
+  width: 32px;
+}
+
+.speech-activated .search-speech-icon{
+  color: var(--red-bg-color);
+  border-color: var(--red-bg-color);
+  opacity: 0.8;
+
+  animation-name: animate-opacity;
+  animation-duration: .8s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-out; 
+}
+
+@keyframes animate-opacity {
+  0%   {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
 .search-box {
-  width: 100%;
-  padding: 0.3rem 0.5rem 0.6rem 1.5rem;
-  border: 0;
-  border-bottom: 1px solid #ddd;
+  width: 86%;
+  padding: 0.65rem 2rem;
+  border: none;
   outline: none;
   color: var(--red-bg-color);
   transition: border-bottom-color 0.25s;
+  background: rgba(0,0,0,0.05);
+  border-radius: 999em;
+}
+
+.no-speech .search-box{
+  width: 100%;
+}
+
+.no-speech .search-clear-icon {
+  right: 25px;
 }
 
 .search-box:focus {
