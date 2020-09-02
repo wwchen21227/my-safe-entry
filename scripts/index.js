@@ -47,6 +47,11 @@ const setupSpeechRecognition = (function(processTranscript) {
 /*** END OF Speech Recognation***/
 
 /*** Util function ***/
+const getDate = (value) => {
+    const date = new Date(value);
+    return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+};
+
 const sortEntryByDate = (arr) => arr.sort((a, b) => b.lastVisitDate - a.lastVisitDate);
 
 const isNumber = (value) => !isNaN(value);
@@ -71,7 +76,9 @@ const searchTenant = (arr, keyword) => {
 const formatDate = (value) => {
     const date = new Date(value);
     return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ` +
-        `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        `${date.getHours()}`+
+        `:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`+
+        `:${(date.getSeconds() < 10 ? '0' : '')}${date.getSeconds()}`;
 }
 
 const $elem = (selector) => document.querySelector(selector);
@@ -109,7 +116,7 @@ const EntryStore = (listKey) => {
             });
     };
 
-    const getAllEntries = () => {
+    const getAllEntries = async () => {
         return localforage.getItem(listKey);
     };
 
@@ -265,6 +272,7 @@ const QRScanner = ({
     const LIST_KEY = 'entries-list';
     const PATH_PRODUCT_KEY_INDEX = 2;
     const entryStore = EntryStore(LIST_KEY);
+    const todayDate = getDate(new Date());
     
     let timeoutId = null;
     let originEntries = [];
@@ -284,35 +292,6 @@ const QRScanner = ({
     const btnClearSearch = $elem('.js-clearSearch');
     const btnSpeech = $elem('.js-speech');
 
-    const updateVisitEntry = (key) => {
-        const { entries } = entryList.state;
-        let entry = entries.find(entry => entry.key === key);
-        entry.lastVisitDate = new Date();
-        entry.visits += 1;
-
-        const sortedList = sortEntryByDate(entries);
-
-        entryStore.save(sortedList);
-        
-        entryList.setState({
-            entries: sortedList
-        });
-    };
-
-    const deleteVisitEntry = (key) => {
-        const { entries } = entryList.state;
-        const newEntries = entries.filter(entry => entry.key !== key);
-        entryStore.save(newEntries);
-
-        if(newEntries.length === 0) {
-            Page.render(PageUrl.LANDING);
-        }else {
-            entryList.setState({
-                entries: newEntries
-            });
-        }
-    }
-
     const entryList = new Veact({
         selector: '#entryList',
         state: {
@@ -321,13 +300,63 @@ const QRScanner = ({
         template: (props) => EntryList(props)
     });
 
+    const todayEntryList = new Veact({
+        selector: '#todayEntryList',
+        state: {
+            entries: []
+        },
+        template: (props) => EntryList(props)
+    });
+
+    const updateEntryList = (entries, isSearch = false) => {
+        const [todayList, pastList] = entries.reduce((result, entry) => {
+                    result[getDate(entry.lastVisitDate) === todayDate ? 0 : 1].push(entry); 
+                    return result;
+                },
+                [[], []]); 
+                    
+        todayEntryList.setState({ entries: todayList });
+        entryList.setState({ entries: pastList });
+
+        if(!isSearch) {
+            if(todayList.length === 0) CssClass.addClass(app, 'no-today-list');
+            if(pastList.length === 0) CssClass.addClass(app, 'no-older-list');
+        }
+    };
+    
+    const updateVisitEntry = async (key) => {
+        const entries = await entryStore.getAllEntries();
+        
+        let entry = entries.find(entry => entry.key === key);
+        entry.lastVisitDate = new Date();
+        entry.visits += 1;
+
+        const sortedList = sortEntryByDate(entries);
+
+        entryStore.save(sortedList);
+        
+        updateEntryList(sortedList);
+    };
+
+    const deleteVisitEntry = async (key) => {
+        const entries = await entryStore.getAllEntries();
+        const newEntries = entries.filter(entry => entry.key !== key);
+        entryStore.save(newEntries);
+
+        if(newEntries.length === 0) {
+            Page.render(PageUrl.LANDING);
+        }else {
+            updateEntryList(newEntries);
+        }
+    }
+
     const Page = {
         render: (url) => {
             app.dataset.page = url
         },
-        showFormOverlay: (url) => {
+        showFormOverlay: async (url) => {
             const pathArr = url.pathname.split('/');
-            const { entries } = entryList.state;
+            const entries = await entryStore.getAllEntries();
             if(url.hostname.indexOf('gov.sg') === -1 || 
                pathArr.length < 2) {
                 if(entries.length === 0) {
@@ -355,8 +384,9 @@ const QRScanner = ({
                 Page.render(PageUrl.LIST);
             }
         },
-        showEditOverlay: (tenantKey) => {
-            const { entries } = entryList.state;
+        showEditOverlay: async (tenantKey) => {
+            const entries = await entryStore.getAllEntries();
+
             const selected = entries.find(entry => entry.key === tenantKey);
             txtTenantName.value = selected.tenant;
             txtTenantName.setAttribute('data-key', tenantKey);
@@ -395,24 +425,23 @@ const QRScanner = ({
     };
 
     const resetSearch = () => {
-        entryList.setState({
-            entries: originEntries
-        }); 
+        updateEntryList(originEntries);
+
         originEntries = [];
         CssClass.removeClass(btnClearSearch, 'visible');
     };
 
-    const searchKeyword = (keyword) => {
-        let { entries } = entryList.state;
+    const searchKeyword = async (keyword) => {
+        const entries = await entryStore.getAllEntries();
         if(originEntries.length === 0) {
             originEntries = entries;
         }else {
             entries = originEntries;
         }
+
         const filteredList = searchTenant(entries, keyword);
-        entryList.setState({
-            entries: filteredList
-        }); 
+        updateEntryList(filteredList, true);
+
         CssClass.addClass(btnClearSearch, 'visible');
     };
 
@@ -421,14 +450,9 @@ const QRScanner = ({
             startStream();
         };
 
-        const handleCancleClick = () => {
+        const handleCancleClick = async () => {
             qrScanner.stopScan();
-            const { entries } = entryList.state;
-            if (entries.length === 0) {
-                Page.render(PageUrl.LANDING);
-            } else {
-                Page.render(PageUrl.LIST);
-            }
+            displayLanding();
         };
 
         const handleSearchKeyup = (e) => {
@@ -443,33 +467,33 @@ const QRScanner = ({
             }, 300);
         };
 
-        const handleUpdate = () => {
-            const { entries } = entryList.state;
+        const handleUpdate = async () => {
+            const entries = await entryStore.getAllEntries();
             const updatedList = entries
-                                .map(entry => entry.key === txtTenantName.dataset.key ? 
-                {
-                    ...entry,
-                    tenant: txtTenantName.value
-                } : entry);
+                                .map(entry => entry.key === txtTenantName.dataset.key 
+                                    ? 
+                                    {
+                                        ...entry,
+                                        tenant: txtTenantName.value.trim()
+                                    } 
+                                    : entry);
 
             entryStore.save(updatedList);
-            
-            entryList.setState({
-                entries: updatedList
-            });
+
+            updateEntryList(updatedList);
 
             isEdit = false;
             Page.render(PageUrl.LIST);
         }
 
-        const handleSaveClick = () => {
+        const handleSaveClick = async () => {
             if (txtTenantName.value.length === 0) {
                 CssClass.addClass(txtTenantName, 'error');
                 txtTenantName.focus();
                 return;
             }
             if (!isEdit) {
-                const { entries } = entryList.state;
+                const entries = await entryStore.getAllEntries();
 
                 entries.push({
                     key: txtTenantName.dataset.key,
@@ -481,9 +505,7 @@ const QRScanner = ({
 
                 entryStore.save(entries);
 
-                entryList.setState({
-                    entries: sortEntryByDate(entries)
-                });
+                updateEntryList(entries);
 
                 //Page.render(PageUrl.LIST);
                 window.location.href = txtTenantName.dataset.url;
@@ -571,34 +593,24 @@ const QRScanner = ({
             Page.render(PageUrl.ABOUT);
         });
 
-        btnCloseMenu.addEventListener('click', () => {
-            const { entries } = entryList.state;
-            if (entries.length === 0) {
-                Page.render(PageUrl.LANDING);
-            } else {
-                Page.render(PageUrl.LIST);
-            }
-        });
+        btnCloseMenu.addEventListener('click', displayLanding);
     };
 
-    const init = () => {
+    const displayLanding = async () => {
+        const entries = await entryStore.getAllEntries();
+        if (entries && entries.length > 0) {
+            updateEntryList(entries);
+
+            Page.render(PageUrl.LIST);
+        } else {
+            Page.render(PageUrl.LANDING);
+        }
+    };
+
+    const init = async () => {
         bindEvents();
 
-        entryStore
-            .getAllEntries()
-            .then(data => {
-                if (data && data.length > 0) {
-                    entryList.setState({
-                        entries: sortEntryByDate(data)
-                    });
-
-                    Page.render(PageUrl.LIST);
-                } else {
-                    Page.render(PageUrl.LANDING);
-                }
-            });
-
-        CssClass.removeClass(app, 'loading');
+        displayLanding();
 
         if(IsBrowserSupport.SpeechRecognition) {
             const SPEECH_WAITING_TIME = 10000;
@@ -607,6 +619,7 @@ const QRScanner = ({
             const commands = {
                 "search for": term => (txtSearchBox.value = term)
             };
+            
             const recognition = setupSpeechRecognition((transcript) => {
                 for (let command in commands) {
                     if (transcript.indexOf(command) === 0) {
@@ -642,7 +655,10 @@ const QRScanner = ({
         }else {
             CssClass.addClass(app, 'no-speech');
         }
+
+        CssClass.removeClass(app, 'loading');
     };
+
     window.addEventListener('load', () => {
         registerSW();
         init();
