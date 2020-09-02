@@ -512,6 +512,15 @@ header svg {
   z-index: -1;
 }
 
+.list-header{
+  margin: 20px 0 0; 
+  color: #999;
+  font-weight: 500;
+  padding-left: 20px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
 .entry-list-item{
   padding: 1rem;
   border-bottom: solid 1px #eee;
@@ -659,7 +668,7 @@ header svg {
 }
 
 .search-box {
-  width: 86%;
+  width: 87%;
   padding: 0.65rem 2rem;
   border: none;
   outline: none;
@@ -881,3 +890,6 @@ label {
 .no-result{
   color: var(--dimmer-text-color);
 }
+
+.no-today-list .today-list-container,
+.no-older-list .older-list-container{display: none;}
