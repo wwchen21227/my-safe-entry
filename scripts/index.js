@@ -369,7 +369,7 @@ const QRScanner = ({
             }
 
             const tenantKey = pathArr[PATH_PRODUCT_KEY_INDEX];
-            const isExist = entries.some(entry => entry.key === tenantKey);
+            const isExist = entries && entries.some(entry => entry.key === tenantKey);
 
             if (!isExist) {
                 txtTenantName.value = getTenantName(tenantKey);
