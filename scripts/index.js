@@ -117,7 +117,7 @@ const EntryStore = (listKey) => {
     };
 
     const getAllEntries = async () => {
-        return localforage.getItem(listKey);
+        return localforage.getItem(listKey) || [];
     };
 
     return {
