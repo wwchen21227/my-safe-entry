@@ -117,7 +117,8 @@ const EntryStore = (listKey) => {
     };
 
     const getAllEntries = async () => {
-        return localforage.getItem(listKey) || [];
+        let entries = await localforage.getItem(listKey) || [];
+        return entries;
     };
 
     return {
@@ -369,7 +370,7 @@ const QRScanner = ({
             }
 
             const tenantKey = pathArr[PATH_PRODUCT_KEY_INDEX];
-            const isExist = entries && entries.some(entry => entry.key === tenantKey);
+            const isExist = entries.some(entry => entry.key === tenantKey);
 
             if (!isExist) {
                 txtTenantName.value = getTenantName(tenantKey);
