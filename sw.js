@@ -1,4 +1,4 @@
-const cacheName = 'myse-v1.4.0';
+const cacheName = 'myse-v1.4.1';
 const staticAssets = [
     './',
     './index.html',
