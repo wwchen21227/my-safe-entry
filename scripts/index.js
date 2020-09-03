@@ -406,9 +406,15 @@ const QRScanner = ({
     });
 
     const moveEntryToTop = (key) => {
-        const entryElem = entryList.elem.querySelector(`[data-key="${key}"]`);
-        entryList.elem.prepend(entryElem);
-
+        let entryElem = entryList.elem.querySelector(`[data-key="${key}"]`);
+        
+        if(entryElem) {
+            entryList.elem.prepend(entryElem);   
+        }else {
+            entryElem = todayEntryList.elem.querySelector(`[data-key="${key}"]`);
+            todayEntryList.elem.prepend(entryElem);   
+        }
+        
         CssClass.addClass(entryElem, 'highlight');
         setTimeout(() => CssClass.removeClass(entryElem, 'highlight'), 3000);
     };
