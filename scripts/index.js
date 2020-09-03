@@ -175,6 +175,81 @@ const EntryList = ({ entries }) => {
             `${entries.map(EntryListItem).join('')}`;
 };
 
+const stringToHTML = (str) =>{
+    const parser = new DOMParser();
+	const doc = parser.parseFromString(str, 'text/html');
+	return doc.body;
+};
+
+const getNodeType = (node) => {
+	if (node.nodeType === 3) return 'text';
+	if (node.nodeType === 8) return 'comment';
+	return node.tagName.toLowerCase();
+};
+
+const getNodeContent = function (node) {
+	if (node.childNodes && node.childNodes.length > 0) return null;
+	return node.textContent;
+};
+
+const diff = (template, elem) => {
+	// Get arrays of child nodes
+	var domNodes = Array.prototype.slice.call(elem.childNodes);
+	var templateNodes = Array.prototype.slice.call(template.childNodes);
+
+	// If extra elements in DOM, remove them
+    var count = domNodes.length - templateNodes.length;
+
+	if (count > 0) {
+		for (; count > 0; count--) {
+			domNodes[domNodes.length - count].parentNode.removeChild(domNodes[domNodes.length - count]);
+		}
+    }
+
+    // Diff each item in the templateNodes
+	templateNodes.forEach(function (node, index) {
+        const targetNode = domNodes[index];
+
+		// If element doesn't exist, create it
+		if (!targetNode) {
+			elem.appendChild(node.cloneNode(true));
+			return;
+		}
+
+        // If element is not the same type, replace it with new element
+		if (getNodeType(node) !== getNodeType(domNodes[index])) {
+			targetNode.parentNode.replaceChild(node.cloneNode(true), targetNode);
+			return;
+        }
+        
+		// If content is different, update it
+		const templateContent = getNodeContent(node);
+		if (templateContent && templateContent !== getNodeContent(targetNode)) {
+			targetNode.textContent = templateContent;
+        }
+        
+        // If target element should be empty, wipe it
+		if (targetNode.childNodes.length > 0 && node.childNodes.length < 1) {
+			targetNode.innerHTML = '';
+			return;
+        }
+        
+        // If element is empty and shouldn't be, build it up
+		// This uses a document fragment to minimize reflows
+		if (targetNode.childNodes.length < 1 && node.childNodes.length > 0) {
+			var fragment = document.createDocumentFragment();
+			diff(node, fragment);
+			targetNode.appendChild(fragment);
+			return;
+        }
+        
+        // If there are existing child elements that need to be modified, diff them
+		if (node.childNodes.length > 0) {
+			diff(node, targetNode);
+		}
+	});
+};
+
 let Veact = function (options) {
     this.elem = document.querySelector(options.selector);
     this.state = options.state;
@@ -182,6 +257,8 @@ let Veact = function (options) {
 };
 
 Veact.prototype.render = function () {
+    //let templateHTML = stringToHTML(this.template(this.state));
+    //diff(templateHTML, this.elem);
     this.elem.innerHTML = this.template(this.state);
 };
 
