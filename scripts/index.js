@@ -142,10 +142,10 @@ const VisitButton = ({url, key}) =>
     `<a class="btn btn-secondary js-visitLink" href="${url}" data-key="${key}" target="_blank">Visit</a>`;
 
 const MenuDropdown = (key) => {
-    return `<div class="entry-list-dropdown" data-key="${key}">` +
-                `<a href="javascript:void(0)" class="dropdown-row js-editEntry">Edit</a>` +
-                `<a href="javascript:void(0)" class="dropdown-row js-deleteEntry">Delete</a>` +
-            `</div>`;
+    return `<div class="entry-list-dropdown" data-key="${key}">
+                <a href="javascript:void(0)" class="dropdown-row js-editEntry">Edit</a>
+                <a href="javascript:void(0)" class="dropdown-row js-deleteEntry">Delete</a>
+            </div>`;
 }
 
 const EntryItemTitle = (tenantName) => 
@@ -155,17 +155,17 @@ const EntryItemVisitDateTime = (lastVisitDate) =>
     `<span class="entry-date d-block">Last visit: ${formatDate(lastVisitDate)}</span>`;
 
 const EntryListItem = (entry) => {
-    return `<li data-key="${entry.key}" class="entry-list-item">` +
-                `<div class="entry-list-content">` +
-                    `${MenuButton()}` +
-                    `${MenuDropdown(entry.key)}` +
-                    `<div>` +
-                        `${EntryItemTitle(entry.tenant)}` +
-                        `${EntryItemVisitDateTime(entry.lastVisitDate)}` +
-                    `</div>` +
-                `</div>` +
-                `${VisitButton({ url: entry.url, key: entry.key })}` +
-            `</li>`;
+    return `<li data-key="${entry.key}" class="entry-list-item">
+                <div class="entry-list-content">
+                    ${MenuButton()}
+                    ${MenuDropdown(entry.key)}
+                    <div>
+                        ${EntryItemTitle(entry.tenant)}
+                        ${EntryItemVisitDateTime(entry.lastVisitDate)}
+                    </div>
+                </div>
+                ${VisitButton({ url: entry.url, key: entry.key })}
+            </li>`;
 };
     
 const EntryList = ({ entries }) => {
